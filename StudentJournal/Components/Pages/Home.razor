@@ -1,0 +1,165 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <!-- Заголовок -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary mb-3">
+                    <i class="bi bi-journal-bookmark-fill me-2"></i>Электронный журнал успеваемости
+                </h1>
+                <p class="lead text-muted">
+                    Веб-приложение для управления учебным процессом
+                </p>
+            </div>
+
+            <!-- Описание системы -->
+            <div class="card shadow-sm border-0 mb-5">
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-4 text-primary">
+                        <i class="bi bi-info-circle me-2"></i>О системе
+                    </h2>
+                    <div class="system-description">
+                        <p class="mb-3">
+                            <strong>Электронный журнал успеваемости</strong> — это современное веб-приложение, разработанное для автоматизации процесса учета успеваемости студентов.
+                        </p>
+                        <p class="mb-3">
+                            Система предоставляет следующие возможности:
+                        </p>
+                        <ul class="mb-4">
+                            <li>Ведение базы данных студентов с информацией об институте и группе</li>
+                            <li>Управление учебными курсами и дисциплинами</li>
+                            <li>Внесение и редактирование оценок студентов</li>
+                            <li>Фильтрация оценок по студентам и курсам</li>
+                            <li>Просмотр статистики успеваемости</li>
+                        </ul>
+                        <p class="mb-0">
+                            Приложение разработано с использованием современных технологий и обладает интуитивно понятным интерфейсом.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Информация о разработчике -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-4 text-primary">
+                        <i class="bi bi-person-badge me-2"></i>Разработчик
+                    </h2>
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-4 mb-md-0">
+                            <div class="developer-avatar mx-auto mb-3">
+                                <i class="bi bi-person-circle" style="font-size: 4rem; color: #0d6efd;"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <h3 class="fw-bold">Абрамушкин Александр</h3>
+
+                            <div class="mb-4">
+                                <h5 class="fw-semibold text-primary mb-2">
+                                    <i class="bi bi-mortarboard me-2"></i>Образование
+                                </h5>
+                                <div class="education-info">
+                                    <p class="mb-1">
+                                        <strong>Учебное заведение:</strong> Высшая школа цифровых технологий
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Группа:</strong> ИИПБ-24-2
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>Направление:</strong> Искусственный интеллект и программирование
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h5 class="fw-semibold text-primary mb-2">
+                                    <i class="bi bi-tools me-2"></i>Технологии проекта
+                                </h5>
+                                <div class="tech-tags">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">Blazor .NET 8</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">C#</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">Bootstrap 5</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">Razor Components</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">JavaScript Interop</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h5 class="fw-semibold text-primary mb-2">
+                                    <i class="bi bi-calendar-check me-2"></i>О проекте
+                                </h5>
+                                <p class="mb-0">
+                                    Данный проект является курсовой работой по дисциплине "Разработка программного обеспечения".
+                                    Цель проекта — создание полнофункционального веб-приложения для автоматизации учебного процесса
+                                    с использованием современных технологий разработки.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Год разработки -->
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <i class="bi bi-copyright me-1"></i>Электронный журнал успеваемости, 2025 год
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .system-description {
+        line-height: 1.6;
+    }
+
+    .system-description ul {
+        padding-left: 1.5rem;
+    }
+
+    .system-description li {
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+
+    .developer-avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid #0d6efd;
+    }
+
+    .education-info {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #0d6efd;
+    }
+
+    .tech-tags .badge {
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .tech-tags .badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .card {
+        border-radius: 12px;
+        transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>

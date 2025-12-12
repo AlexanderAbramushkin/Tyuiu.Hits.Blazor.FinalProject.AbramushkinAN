@@ -1,0 +1,68 @@
+﻿@page "/grades/edit/{Id:int}"
+@inject IGradeService GradeService
+@inject IStudentService StudentService
+@inject ICourseService CourseService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>Редактировать оценку</h3>
+
+@if (editingGrade == null)
+{
+    <p>Загрузка...</p>
+}
+else
+{
+    <div class="mb-2">
+        <label>Студент</label>
+        <select class="form-select" @bind="editingGrade.StudentId">
+            <option value="">Выберите студента</option>
+            @foreach (var student in studentList)
+            {
+                <option value="@student.Id">@student.Name (@student.Group)</option>
+            }
+        </select>
+    </div>
+    <div class="mb-2">
+        <label>Курс</label>
+        <select class="form-select" @bind="editingGrade.CourseId">
+            <option value="">Выберите курс</option>
+            @foreach (var course in courseList)
+            {
+                <option value="@course.Id">@course.Name</option>
+            }
+        </select>
+    </div>
+    <div class="mb-2">
+        <label>Оценка</label>
+        <input type="number" class="form-control" min="0" max="100" @bind="editingGrade.Score" />
+    </div>
+
+    <button class="btn btn-success me-2" @onclick="@SaveGrade">Сохранить</button>
+    <button class="btn btn-secondary" @onclick="@(() => NavigationManager.NavigateTo("/grades"))">Отмена</button>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Grade? editingGrade;
+    private List<Student> studentList = new();
+    private List<Course> courseList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        editingGrade = await GradeService.GetGradeByIdAsync(Id);
+        studentList = (await StudentService.GetStudentsAsync()).ToList();
+        courseList = (await CourseService.GetCoursesAsync()).ToList();
+    }
+
+    private async Task SaveGrade()
+    {
+        if (editingGrade != null)
+        {
+            await GradeService.UpdateGradeAsync(editingGrade);
+            NavigationManager.NavigateTo("/grades");
+        }
+    }
+}

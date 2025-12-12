@@ -1,0 +1,90 @@
+﻿@page "/courses/add"
+@using StudentJournal.Data.Models
+@inject ICourseService CourseService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary mb-1">Добавить курс</h2>
+            <p class="text-muted">Создание нового учебного курса</p>
+        </div>
+        <button class="btn btn-outline-secondary d-flex align-items-center gap-2"
+                @onclick="@(() => NavigationManager.NavigateTo("/courses"))">
+            <i class="bi bi-arrow-left"></i> Назад
+        </button>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Название курса *</label>
+                            <input class="form-control form-control-lg"
+                                   @bind="NewCourse.Name"
+                                   placeholder="Введите название курса"
+                                   required />
+                            <div class="form-text">Название должно быть понятным и отражать содержание курса</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Описание</label>
+                            <textarea class="form-control"
+                                      @bind="NewCourse.Description"
+                                      rows="4"
+                                      placeholder="Опишите содержание курса, цели и задачи"></textarea>
+                            <div class="form-text">Подробное описание поможет студентам понять содержание курса</div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3 pt-3">
+                            <button type="button"
+                                    class="btn btn-outline-secondary px-4"
+                                    @onclick="@(() => NavigationManager.NavigateTo("/courses"))">
+                                Отмена
+                            </button>
+                            <button type="button"
+                                    class="btn btn-primary px-4 d-flex align-items-center gap-2"
+                                    @onclick="@SaveCourse"
+                                    disabled="@(string.IsNullOrWhiteSpace(NewCourse.Name))">
+                                <i class="bi bi-check-circle"></i> Сохранить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Course NewCourse = new();
+
+    private async Task SaveCourse()
+    {
+        if (string.IsNullOrWhiteSpace(NewCourse.Name))
+            return;
+
+        await CourseService.AddCourseAsync(NewCourse);
+        NavigationManager.NavigateTo("/courses");
+    }
+}
+
+<style>
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+</style>

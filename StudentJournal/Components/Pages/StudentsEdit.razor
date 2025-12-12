@@ -1,0 +1,50 @@
+﻿@page "/students/edit/{Id:int}"
+@inject IStudentService StudentService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>Редактировать студента</h3>
+
+@if (editingStudent == null)
+{
+    <p>Загрузка...</p>
+}
+else
+{
+    <div class="mb-2">
+        <label>ФИО</label>
+        <input class="form-control" @bind="editingStudent.Name" />
+    </div>
+    <div class="mb-2">
+        <label>Институт</label>
+        <input class="form-control" @bind="editingStudent.Institute" />
+    </div>
+    <div class="mb-2">
+        <label>Группа</label>
+        <input class="form-control" @bind="editingStudent.Group" />
+    </div>
+
+    <button class="btn btn-success me-2" @onclick="@SaveStudent">Сохранить</button>
+    <button class="btn btn-secondary" @onclick="@(() => NavigationManager.NavigateTo("/students"))">Отмена</button>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Student? editingStudent;
+
+    protected override async Task OnInitializedAsync()
+    {
+        editingStudent = await StudentService.GetStudentByIdAsync(Id);
+    }
+
+    private async Task SaveStudent()
+    {
+        if (editingStudent != null)
+        {
+            await StudentService.UpdateStudentAsync(editingStudent);
+            NavigationManager.NavigateTo("/students");
+        }
+    }
+}

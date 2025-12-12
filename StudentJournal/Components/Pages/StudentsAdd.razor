@@ -1,0 +1,32 @@
+﻿@page "/students/add"
+@inject IStudentService StudentService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>Добавить студента</h3>
+
+<div class="mb-2">
+    <label>ФИО</label>
+    <input class="form-control" @bind="newStudent.Name" />
+</div>
+<div class="mb-2">
+    <label>Институт</label>
+    <input class="form-control" @bind="newStudent.Institute" />
+</div>
+<div class="mb-2">
+    <label>Группа</label>
+    <input class="form-control" @bind="newStudent.Group" />
+</div>
+
+<button class="btn btn-success me-2" @onclick="@SaveStudent">Сохранить</button>
+<button class="btn btn-secondary" @onclick="@(() => NavigationManager.NavigateTo("/students"))">Отмена</button>
+
+@code {
+    private Student newStudent = new();
+
+    private async Task SaveStudent()
+    {
+        await StudentService.AddStudentAsync(newStudent);
+        NavigationManager.NavigateTo("/students");
+    }
+}

@@ -1,0 +1,93 @@
+﻿@rendermode InteractiveServer
+
+<div class="navbar-nav">
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+            <span class="bi bi-house-door me-2"></span> Главная
+        </NavLink>
+    </div>
+
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="students">
+            <span class="bi bi-people me-2"></span> Студенты
+        </NavLink>
+    </div>
+
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="courses">
+            <span class="bi bi-book me-2"></span> Курсы
+        </NavLink>
+    </div>
+
+    <div class="nav-item px-3">
+        <NavLink class="nav-link" href="grades">
+            <span class="bi bi-clipboard-data me-2"></span> Оценки
+        </NavLink>
+    </div>
+
+    <div class="nav-item px-3 mt-3 border-top pt-3">
+        <div class="user-info text-center">
+            <div class="user-avatar mb-2">
+                <i class="bi bi-person-circle" style="font-size: 2.5rem; color: #0d6efd;"></i>
+            </div>
+            <p class="mb-1 small fw-semibold">Абрамушкин А.</p>
+            <p class="mb-0 small text-muted">ИИПБ-24-2</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-item {
+        margin: 0.25rem 0;
+    }
+
+    .nav-link {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        color: #495057;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-link:hover {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        transform: translateX(5px);
+    }
+
+    .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+        font-weight: 600;
+    }
+
+    .nav-link.active:hover {
+        background-color: #0b5ed7;
+        color: white;
+    }
+
+    .user-info {
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        border: 2px solid #0d6efd;
+    }
+
+    .bi {
+        font-size: 1.1rem;
+    }
+</style>

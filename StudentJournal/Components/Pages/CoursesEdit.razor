@@ -1,0 +1,46 @@
+﻿@page "/courses/edit/{Id:int}"
+@inject ICourseService CourseService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>Редактировать курс</h3>
+
+@if (editingCourse == null)
+{
+    <p>Загрузка...</p>
+}
+else
+{
+    <div class="mb-2">
+        <label>Название</label>
+        <input class="form-control" @bind="editingCourse.Name" />
+    </div>
+    <div class="mb-2">
+        <label>Описание</label>
+        <input class="form-control" @bind="editingCourse.Description" />
+    </div>
+
+    <button class="btn btn-success me-2" @onclick="@SaveCourse">Сохранить</button>
+    <button class="btn btn-secondary" @onclick="@(() => NavigationManager.NavigateTo("/courses"))">Отмена</button>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Course? editingCourse;
+
+    protected override async Task OnInitializedAsync()
+    {
+        editingCourse = await CourseService.GetCourseByIdAsync(Id);
+    }
+
+    private async Task SaveCourse()
+    {
+        if (editingCourse != null)
+        {
+            await CourseService.UpdateCourseAsync(editingCourse);
+            NavigationManager.NavigateTo("/courses");
+        }
+    }
+}
