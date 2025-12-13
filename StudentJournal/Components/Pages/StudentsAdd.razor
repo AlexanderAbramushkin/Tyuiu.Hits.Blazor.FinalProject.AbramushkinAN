@@ -1,32 +1,226 @@
 ﻿@page "/students/add"
+@using StudentJournal.Data.Models
 @inject IStudentService StudentService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<h3>Добавить студента</h3>
+<div class="container-fluid px-4">
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title">Добавить студента</h2>
+                <p class="page-subtitle">Создание новой записи о студенте</p>
+            </div>
+            <button class="btn btn-outline-secondary btn-with-icon"
+                    @onclick="@(() => NavigationManager.NavigateTo("/students"))">
+                <i class="bi bi-arrow-left"></i> Назад
+            </button>
+        </div>
+    </div>
 
-<div class="mb-2">
-    <label>ФИО</label>
-    <input class="form-control" @bind="newStudent.Name" />
-</div>
-<div class="mb-2">
-    <label>Институт</label>
-    <input class="form-control" @bind="newStudent.Institute" />
-</div>
-<div class="mb-2">
-    <label>Группа</label>
-    <input class="form-control" @bind="newStudent.Group" />
-</div>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <div class="form-header">
+                    <h5 class="form-title">Основная информация</h5>
+                </div>
+                <div class="form-body">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>ФИО студента</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input class="form-input"
+                               @bind="newStudent.Name"
+                               placeholder="Введите полное имя студента"
+                               required />
+                    </div>
 
-<button class="btn btn-success me-2" @onclick="@SaveStudent">Сохранить</button>
-<button class="btn btn-secondary" @onclick="@(() => NavigationManager.NavigateTo("/students"))">Отмена</button>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>Институт</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-input" @bind="newStudent.Institute" required>
+                            <option value="">Выберите институт</option>
+                            @foreach (var institute in institutes)
+                            {
+                                <option value="@institute">@institute</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>Группа</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <input class="form-input"
+                               @bind="newStudent.Group"
+                               placeholder="Введите номер группы"
+                               required />
+                    </div>
+
+                    <div class="form-footer">
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-action"
+                                    @onclick="@(() => NavigationManager.NavigateTo("/students"))">
+                                Отмена
+                            </button>
+                            <button type="button"
+                                    class="btn btn-primary btn-action"
+                                    @onclick="@SaveStudent"
+                                    disabled="@(!IsFormValid)">
+                                <i class="bi bi-check-circle me-2"></i> Сохранить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
     private Student newStudent = new();
 
+    private List<string> institutes = new List<string>
+    {
+        "Институт архитектуры и дизайна",
+        "Строительный институт",
+        "Высшая инженерная школа EG",
+        "Высшая школа цифровых технологий",
+        "Нефтегазовый институт",
+        "Институт сервиса и отраслевого управления",
+        "Технологический институт",
+        "Институт заочного и дистанционного образования"
+    };
+
+    private bool IsFormValid =>
+        !string.IsNullOrWhiteSpace(newStudent.Name) &&
+        !string.IsNullOrWhiteSpace(newStudent.Institute) &&
+        !string.IsNullOrWhiteSpace(newStudent.Group);
+
     private async Task SaveStudent()
     {
-        await StudentService.AddStudentAsync(newStudent);
-        NavigationManager.NavigateTo("/students");
+        if (IsFormValid)
+        {
+            await StudentService.AddStudentAsync(newStudent);
+            NavigationManager.NavigateTo("/students");
+        }
     }
 }
+
+<style>
+    /* Стили такие же как в CoursesAdd.razor */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+    }
+
+    .btn-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+    }
+
+    .form-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .form-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .form-body {
+        padding: 1.5rem;
+    }
+
+    .form-footer {
+        padding: 1.5rem 1.5rem 0;
+        border-top: 1px solid #e9ecef;
+        margin-top: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    /* Стрелочки только для select */
+    select.form-input {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+    }
+
+    /* Для input стрелочек не должно быть */
+    input.form-input {
+        background-image: none;
+    }
+
+    .form-input:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.1);
+        outline: 0;
+    }
+
+    .btn-action {
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+    }
+</style>

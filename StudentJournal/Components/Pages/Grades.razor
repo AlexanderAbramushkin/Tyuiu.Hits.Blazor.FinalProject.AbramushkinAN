@@ -3,45 +3,29 @@
 @inject IStudentService StudentService
 @inject ICourseService CourseService
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 @using StudentJournal.Data.Models
-@using StudentJournal.Data.Services
 
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-primary mb-1">Журнал оценок</h2>
-            <p class="text-muted">Управление оценками студентов</p>
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title">Журнал оценок</h2>
+                <p class="page-subtitle">Управление оценками студентов</p>
+            </div>
+            <button class="btn btn-primary btn-with-icon"
+                    @onclick="@(() => NavigationManager.NavigateTo("/grades/add"))">
+                <i class="bi bi-plus-circle"></i> Добавить оценку
+            </button>
         </div>
-        <button class="btn btn-primary d-flex align-items-center gap-2"
-                @onclick="@(() => NavigationManager.NavigateTo("/grades/add"))">
-            <i class="bi bi-plus-circle"></i> Добавить оценку
-        </button>
     </div>
 
-    <!-- Отладочная информация -->
-    @if (debugInfo)
-    {
-        <div class="alert alert-info mb-3">
-            <strong>Отладка:</strong>
-            Студентов: @studentList.Count,
-            Курсов: @courseList.Count,
-            Оценок: @gradeList.Count
-            @if (gradeList.Count > 0)
-            {
-                <br />
-                <small>Первая оценка: StudentId=@gradeList[0].StudentId, CourseId=@gradeList[0].CourseId</small>
-            }
-        </div>
-    }
-
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body p-4">
-            <h5 class="fw-semibold mb-3">Фильтры</h5>
+    <div class="card filters-card mb-4">
+        <div class="card-body">
+            <h5 class="filters-title">Фильтры</h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Студент</label>
+                    <label class="form-label">Студент</label>
                     <select class="form-select" @bind="SelectedStudentId" @bind:event="onchange">
                         <option value="">Все студенты</option>
                         @foreach (var student in studentList)
@@ -51,7 +35,7 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-semibold">Курс</label>
+                    <label class="form-label">Курс</label>
                     <select class="form-select" @bind="SelectedCourseId" @bind:event="onchange">
                         <option value="">Все курсы</option>
                         @foreach (var course in courseList)
@@ -74,135 +58,114 @@
 
     @if (isLoading)
     {
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Загрузка...</span>
-            </div>
-            <p class="mt-2 text-muted">Загрузка данных...</p>
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Загрузка данных...</p>
         </div>
     }
     else if (gradeList.Count == 0)
     {
-        <div class="text-center py-5">
-            <div class="empty-state">
-                <i class="bi bi-clipboard-data text-muted" style="font-size: 4rem;"></i>
-                <h4 class="mt-3">Нет оценок</h4>
-                <p class="text-muted">Добавьте первую оценку, чтобы начать</p>
-                <button class="btn btn-primary mt-2" @onclick="@(() => NavigationManager.NavigateTo("/grades/add"))">
-                    <i class="bi bi-plus"></i> Добавить оценку
-                </button>
-                <div class="mt-3">
-                    <button class="btn btn-sm btn-outline-info" @onclick="LoadData">
-                        <i class="bi bi-arrow-clockwise"></i> Обновить данные
-                    </button>
-                    <button class="btn btn-sm btn-outline-warning ms-2" @onclick="ToggleDebug">
-                        <i class="bi bi-bug"></i> Отладка
-                    </button>
-                </div>
-            </div>
+        <div class="empty-state">
+            <i class="bi bi-clipboard-data empty-icon"></i>
+            <h4 class="empty-title">Нет оценок</h4>
+            <p class="empty-text">Добавьте первую оценку, чтобы начать</p>
+            <button class="btn btn-primary" @onclick="@(() => NavigationManager.NavigateTo("/grades/add"))">
+                <i class="bi bi-plus"></i> Добавить оценку
+            </button>
         </div>
     }
     else
     {
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="border-0">Студент</th>
-                                <th class="border-0">Группа</th>
-                                <th class="border-0">Курс</th>
-                                <th class="border-0 text-center">Оценка</th>
-                                <th class="border-0 text-end">Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var grade in gradeList)
-                            {
-                                var student = studentList.FirstOrDefault(s => s.Id == grade.StudentId);
-                                var course = courseList.FirstOrDefault(c => c.Id == grade.CourseId);
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Студент</th>
+                            <th>Группа</th>
+                            <th>Курс</th>
+                            <th class="text-center">Оценка</th>
+                            <th class="text-end">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var grade in gradeList)
+                        {
+                            var student = studentList.FirstOrDefault(s => s.Id == grade.StudentId);
+                            var course = courseList.FirstOrDefault(c => c.Id == grade.CourseId);
 
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
-                                                <i class="bi bi-person"></i>
+                            <tr>
+                                <td>
+                                    <div class="student-info">
+                                        <div class="student-details">
+                                            <div class="student-name">
+                                                @if (student != null)
+                                                {
+                                                    @student.Name
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger">[Студент не найден]</span>
+                                                }
                                             </div>
-                                            <div>
-                                                <div class="fw-semibold">
-                                                    @if (student != null)
-                                                    {
-                                                        @student.Name
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-danger">[Студент не найден: @grade.StudentId]</span>
-                                                    }
-                                                </div>
-                                                <small class="text-muted">@student?.Institute</small>
-                                            </div>
+                                            <div class="student-institute">@student?.Institute</div>
                                         </div>
-                                    </td>
-                                    <td>
-                                        @if (student != null)
-                                        {
-                                            <span class="badge bg-secondary bg-opacity-10 text-secondary">@student.Group</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (course != null)
-                                        {
-                                            <span class="badge bg-primary bg-opacity-10 text-primary">@course.Name</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-danger">[Курс не найден: @grade.CourseId]</span>
-                                        }
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="grade-badge @GetGradeClass(grade.Score)">
-                                            @grade.Score
-                                        </span>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-primary"
-                                                    @onclick="@(() => NavigationManager.NavigateTo($"/grades/edit/{grade.Id}"))"
-                                                    title="Редактировать">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger"
-                                                    @onclick="@(() => DeleteGrade(grade.Id))"
-                                                    title="Удалить">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (student != null)
+                                    {
+                                        <span class="group-badge">@student.Group</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (course != null)
+                                    {
+                                        <span class="course-badge">@course.Name</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger">[Курс не найден]</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <span class="grade-badge @GetGradeClass(grade.Score)">
+                                        @grade.Score
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-outline-primary btn-action"
+                                                @onclick="@(() => NavigationManager.NavigateTo($"/grades/edit/{grade.Id}"))"
+                                                title="Редактировать">
+                                            <i class="bi bi-pencil me-1"></i> Редактировать
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger btn-action"
+                                                @onclick="@(() => ShowDeleteConfirm(grade.Id, student?.Name ?? "Неизвестный студент", course?.Name ?? "Неизвестный курс"))"
+                                                title="Удалить">
+                                            <i class="bi bi-trash me-1"></i> Удалить
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-            <div class="card-footer bg-transparent border-top">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="text-muted">
-                        Показано <strong>@gradeList.Count</strong> записей
-                    </div>
-                    <div>
-                        <button class="btn btn-sm btn-outline-info" @onclick="LoadData">
-                            <i class="bi bi-arrow-clockwise"></i> Обновить
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning ms-2" @onclick="ToggleDebug">
-                            <i class="bi bi-bug"></i> Отладка
-                        </button>
-                    </div>
+            <div class="table-footer">
+                <div class="table-summary">
+                    Показано <strong>@gradeList.Count</strong> записей
                 </div>
             </div>
         </div>
     }
 </div>
+
+<ConfirmDialog @ref="deleteDialog"
+               Title="Удаление оценки"
+               Icon="bi-trash"
+               Message="@($"Вы уверены, что хотите удалить оценку '{gradeToDeleteScore}' студента {gradeToDeleteStudent} по курсу {gradeToDeleteCourse}?")"
+               OnClose="OnDeleteDialogClosed" />
 
 @code {
     private List<Student> studentList = new();
@@ -211,36 +174,24 @@
     private int? SelectedStudentId;
     private int? SelectedCourseId;
     private bool isLoading = true;
-    private bool debugInfo = false;
-    private bool isInitialized = false;
+    private ConfirmDialog? deleteDialog;
+    private int gradeToDeleteId;
+    private string gradeToDeleteStudent = string.Empty;
+    private string gradeToDeleteCourse = string.Empty;
+    private int gradeToDeleteScore;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadDataInternal(false);
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            isInitialized = true;
-            // Повторная загрузка не требуется, так как уже загружено в OnInitializedAsync
-        }
+        await LoadData();
     }
 
     private async Task LoadData()
-    {
-        await LoadDataInternal(true);
-    }
-
-    private async Task LoadDataInternal(bool useJs)
     {
         try
         {
             isLoading = true;
             StateHasChanged();
 
-            // Загружаем данные последовательно, а не параллельно
             studentList = (await StudentService.GetStudentsAsync()).ToList();
             courseList = (await CourseService.GetCoursesAsync()).ToList();
 
@@ -253,26 +204,10 @@
                 grades = grades.Where(g => g.CourseId == SelectedCourseId.Value);
 
             gradeList = grades.ToList();
-
-            // Отладочная информация
-            Console.WriteLine($"Загружено: {studentList.Count} студентов, {courseList.Count} курсов, {gradeList.Count} оценок");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Ошибка загрузки данных: {ex.Message}");
-
-            // Только после инициализации можно вызывать JS
-            if (useJs && isInitialized)
-            {
-                try
-                {
-                    await JSRuntime.InvokeVoidAsync("alert", $"Ошибка загрузки данных: {ex.Message}");
-                }
-                catch
-                {
-                    // Игнорируем ошибки JS
-                }
-            }
         }
         finally
         {
@@ -285,26 +220,12 @@
     {
         try
         {
-            bool confirmed = await ShowConfirmDialog("Удаление оценки", "Вы уверены, что хотите удалить эту оценку?");
-            if (confirmed)
-            {
-                await GradeService.DeleteGradeAsync(id);
-                await LoadData();
-            }
+            await GradeService.DeleteGradeAsync(id);
+            await LoadData();
         }
         catch (Exception ex)
         {
-            if (isInitialized)
-            {
-                try
-                {
-                    await JSRuntime.InvokeVoidAsync("alert", $"Ошибка при удалении: {ex.Message}");
-                }
-                catch
-                {
-                    // Игнорируем ошибки JS
-                }
-            }
+            Console.WriteLine($"Ошибка при удалении: {ex.Message}");
         }
     }
 
@@ -315,83 +236,280 @@
         await LoadData();
     }
 
-    private void ToggleDebug()
-    {
-        debugInfo = !debugInfo;
-        StateHasChanged();
-    }
-
     private string GetGradeClass(int score)
     {
-        if (score >= 85) return "grade-excellent";
-        if (score >= 70) return "grade-good";
-        if (score >= 60) return "grade-average";
+        if (score >= 91) return "grade-excellent";
+        if (score >= 76) return "grade-good";
+        if (score >= 61) return "grade-average";
         return "grade-poor";
     }
 
-    private async Task<bool> ShowConfirmDialog(string title, string message)
+    private void ShowDeleteConfirm(int id, string studentName, string courseName)
     {
-        if (!isInitialized)
-            return true;
-
-        try
+        var grade = gradeList.FirstOrDefault(g => g.Id == id);
+        if (grade != null)
         {
-            return await JSRuntime.InvokeAsync<bool>("confirm", message);
+            gradeToDeleteId = id;
+            gradeToDeleteStudent = studentName;
+            gradeToDeleteCourse = courseName;
+            gradeToDeleteScore = grade.Score;
+            deleteDialog?.Show();
         }
-        catch
+    }
+
+    private async Task OnDeleteDialogClosed(bool confirmed)
+    {
+        if (confirmed)
         {
-            return true;
+            await DeleteGrade(gradeToDeleteId);
         }
     }
 }
 
 <style>
-    .avatar-sm {
-        width: 36px;
-        height: 36px;
+    /* Обновленные стили для кнопок действий */
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .btn-action {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        min-width: 120px;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+    /* Остальные стили остаются без изменений */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+    }
+
+    .btn-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .card.filters-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+    }
+
+    .filters-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 4rem 1rem;
+    }
+
+    .spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 0.25rem solid rgba(52, 152, 219, 0.2);
+        border-top: 0.25rem solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1.5rem;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .loading-state p {
+        color: #7f8c8d;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #bdc3c7;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-title {
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: #7f8c8d;
+        margin-bottom: 2rem;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+    }
+
+    .data-table {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+        .data-table thead {
+            background-color: #f8f9fa;
+        }
+
+        .data-table th {
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 1rem 1.25rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #e9ecef;
+            color: #495057;
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.2s;
+        }
+
+            .data-table tbody tr:hover {
+                background-color: rgba(52, 152, 219, 0.05);
+            }
+
+            .data-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+    .student-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .student-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .student-name {
+        font-weight: 600;
+        color: #2c3e50;
         font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .student-institute {
+        font-size: 0.8rem;
+        color: #7f8c8d;
+    }
+
+    .group-badge {
+        background: rgba(108, 117, 125, 0.1);
+        color: #6c757d;
+        border-radius: 20px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .course-badge {
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        border-radius: 20px;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: inline-block;
     }
 
     .grade-badge {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 48px;
         height: 48px;
-        line-height: 48px;
         border-radius: 50%;
         font-weight: bold;
-        font-size: 1.1rem;
+        font-size: 1rem;
+        border: 2px solid;
     }
 
     .grade-excellent {
-        background-color: rgba(25, 135, 84, 0.1);
-        color: #198754;
-        border: 2px solid #198754;
+        background-color: rgba(39, 174, 96, 0.1);
+        color: #27ae60;
+        border-color: #27ae60;
     }
 
     .grade-good {
-        background-color: rgba(13, 110, 253, 0.1);
-        color: #0d6efd;
-        border: 2px solid #0d6efd;
+        background-color: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        border-color: #3498db;
     }
 
     .grade-average {
-        background-color: rgba(255, 193, 7, 0.1);
-        color: #ffc107;
-        border: 2px solid #ffc107;
+        background-color: rgba(243, 156, 18, 0.1);
+        color: #f39c12;
+        border-color: #f39c12;
     }
 
     .grade-poor {
-        background-color: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-        border: 2px solid #dc3545;
+        background-color: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+        border-color: #e74c3c;
     }
 
-    .table > :not(caption) > * > * {
-        padding: 1rem;
-        vertical-align: middle;
+    .table-footer {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid #e9ecef;
+        background-color: #f8f9fa;
     }
 
-    .btn-group .btn {
-        border-radius: 6px !important;
+    .table-summary {
+        color: #7f8c8d;
+        font-size: 0.9rem;
     }
+
+        .table-summary strong {
+            color: #2c3e50;
+        }
 </style>

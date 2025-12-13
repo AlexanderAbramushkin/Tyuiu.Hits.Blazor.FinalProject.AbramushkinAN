@@ -1,72 +1,65 @@
-﻿using StudentJournal.Data.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using StudentJournal.Data.Models;
+using StudentJournal.Data.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using StudentJournal.Data.Interfaces;
 
 namespace StudentJournal.Data.Services
 {
     public class GradeService : IGradeService
     {
-        private List<Grade> _grades = new();
-        private int _nextId = 1;
+        private readonly ApplicationDbContext _context;
 
-        public GradeService()
+        public GradeService(ApplicationDbContext context)
         {
-            // Добавим тестовые данные для проверки
-            _grades.Add(new Grade { Id = _nextId++, StudentId = 1, CourseId = 1, Score = 85 });
-            _grades.Add(new Grade { Id = _nextId++, StudentId = 1, CourseId = 2, Score = 92 });
-            _grades.Add(new Grade { Id = _nextId++, StudentId = 2, CourseId = 1, Score = 78 });
-            _grades.Add(new Grade { Id = _nextId++, StudentId = 2, CourseId = 2, Score = 65 });
+            _context = context;
         }
 
         public async Task<IEnumerable<Grade>> GetGradesAsync()
         {
-            return await Task.FromResult(_grades);
+            return await _context.Grades.ToListAsync();
         }
 
         public async Task<Grade?> GetGradeByIdAsync(int id)
         {
-            return await Task.FromResult(_grades.FirstOrDefault(g => g.Id == id));
+            return await _context.Grades.FindAsync(id);
         }
 
         public async Task AddGradeAsync(Grade grade)
         {
-            grade.Id = _nextId++;
-            _grades.Add(grade);
-            await Task.CompletedTask;
+            _context.Grades.Add(grade);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateGradeAsync(Grade updatedGrade)
         {
-            var grade = _grades.FirstOrDefault(g => g.Id == updatedGrade.Id);
-            if (grade != null)
-            {
-                grade.StudentId = updatedGrade.StudentId;
-                grade.CourseId = updatedGrade.CourseId;
-                grade.Score = updatedGrade.Score;
-            }
-            await Task.CompletedTask;
+            _context.Grades.Update(updatedGrade);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteGradeAsync(int id)
         {
-            var grade = _grades.FirstOrDefault(g => g.Id == id);
+            var grade = await _context.Grades.FindAsync(id);
             if (grade != null)
             {
-                _grades.Remove(grade);
+                _context.Grades.Remove(grade);
+                await _context.SaveChangesAsync();
             }
-            await Task.CompletedTask;
         }
 
-        public Task<IEnumerable<Grade>> GetGradesByStudentIdAsync(int studentId)
+        public async Task<IEnumerable<Grade>> GetGradesByStudentIdAsync(int studentId)
         {
-            throw new NotImplementedException();
+            return await _context.Grades
+                .Where(g => g.StudentId == studentId)
+                .ToListAsync();
         }
 
-        public Task<IEnumerable<Grade>> GetGradesByCourseIdAsync(int courseId)
+        public async Task<IEnumerable<Grade>> GetGradesByCourseIdAsync(int courseId)
         {
-            throw new NotImplementedException();
+            return await _context.Grades
+                .Where(g => g.CourseId == courseId)
+                .ToListAsync();
         }
     }
 }

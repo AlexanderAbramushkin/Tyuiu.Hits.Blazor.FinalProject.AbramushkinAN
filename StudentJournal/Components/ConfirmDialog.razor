@@ -1,0 +1,181 @@
+﻿@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@if (Visible)
+{
+    <div class="confirm-overlay" @onclick="@(e => Close())">
+        <div class="confirm-dialog" @onclick:stopPropagation="true">
+            <div class="confirm-header">
+                <h5 class="confirm-title">@Title</h5>
+                <button type="button" class="confirm-close" @onclick="Close">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="confirm-body">
+                @if (!string.IsNullOrEmpty(Icon))
+                {
+                    <div class="confirm-icon">
+                        <i class="bi @Icon"></i>
+                    </div>
+                }
+                <div class="confirm-message">@Message</div>
+            </div>
+            <div class="confirm-footer">
+                <button type="button" class="btn btn-outline-secondary btn-dialog" @onclick="Close">
+                    Отмена
+                </button>
+                <button type="button" class="btn btn-danger btn-dialog" @onclick="Confirm">
+                    Удалить
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Title { get; set; } = "Подтверждение удаления";
+    [Parameter] public string Message { get; set; } = "Вы уверены, что хотите удалить эту запись?";
+    [Parameter] public string Icon { get; set; } = "bi-exclamation-triangle";
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+
+    private bool Visible { get; set; }
+
+    public void Show()
+    {
+        Visible = true;
+        StateHasChanged();
+    }
+
+    private void Close()
+    {
+        Visible = false;
+        OnClose.InvokeAsync(false);
+    }
+
+    private void Confirm()
+    {
+        Visible = false;
+        OnClose.InvokeAsync(true);
+    }
+}
+
+<style>
+    .confirm-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        animation: fadeIn 0.2s ease;
+    }
+
+    .confirm-dialog {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        width: 90%;
+        max-width: 450px;
+        animation: slideIn 0.3s ease;
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+
+    .confirm-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .confirm-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .confirm-close {
+        background: none;
+        border: none;
+        color: #7f8c8d;
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+        .confirm-close:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: #e74c3c;
+        }
+
+    .confirm-body {
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
+
+    .confirm-icon {
+        font-size: 3rem;
+        color: #e74c3c;
+        margin-bottom: 1.5rem;
+    }
+
+    .confirm-message {
+        color: #2c3e50;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .confirm-footer {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        background-color: #f8f9fa;
+    }
+
+    .btn-dialog {
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        min-width: 100px;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+</style>

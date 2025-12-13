@@ -1,19 +1,30 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StudentJournal.Data.Interfaces;
 using StudentJournal.Data.Models;
+using StudentJournal.Data.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StudentJournal.Data.Services
 {
     public class StudentService : IStudentService
     {
         private readonly ApplicationDbContext _context;
-        public StudentService(ApplicationDbContext context) => _context = context;
 
-        public async Task<IEnumerable<Student>> GetStudentsAsync() =>
-            await _context.Students.AsNoTracking().ToListAsync();
+        public StudentService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-        public async Task<Student?> GetStudentByIdAsync(int id) =>
-            await _context.Students.FindAsync(id);
+        public async Task<IEnumerable<Student>> GetStudentsAsync()
+        {
+            return await _context.Students.ToListAsync();
+        }
+
+        public async Task<Student?> GetStudentByIdAsync(int id)
+        {
+            return await _context.Students.FindAsync(id);
+        }
 
         public async Task AddStudentAsync(Student student)
         {
@@ -21,16 +32,10 @@ namespace StudentJournal.Data.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateStudentAsync(Student student)
+        public async Task UpdateStudentAsync(Student updatedStudent)
         {
-            var existing = await _context.Students.FindAsync(student.Id);
-            if (existing != null)
-            {
-                existing.Name = student.Name;
-                existing.Institute = student.Institute;
-                existing.Group = student.Group;
-                await _context.SaveChangesAsync();
-            }
+            _context.Students.Update(updatedStudent);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteStudentAsync(int id)
@@ -43,10 +48,11 @@ namespace StudentJournal.Data.Services
             }
         }
 
-        public async Task<IEnumerable<Student>> GetStudentsByGroupAsync(string group) =>
-            await _context.Students
+        public async Task<IEnumerable<Student>> GetStudentsByGroupAsync(string group)
+        {
+            return await _context.Students
                 .Where(s => s.Group == group)
-                .AsNoTracking()
                 .ToListAsync();
+        }
     }
 }

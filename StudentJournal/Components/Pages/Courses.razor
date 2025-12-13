@@ -1,62 +1,57 @@
 ﻿@page "/courses"
 @inject ICourseService CourseService
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
-@using StudentJournal.Data.Models
-@using StudentJournal.Data.Services
 @rendermode InteractiveServer
+@using StudentJournal.Data.Models
 
 <div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-primary mb-1">Курсы</h2>
-            <p class="text-muted">Управление учебными курсами</p>
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title">Учебные дисциплины</h2>
+                <p class="page-subtitle">Управление учебными дисциплинами</p>
+            </div>
+            <button class="btn btn-primary btn-with-icon" @onclick="GoToCoursesAdd">
+                <i class="bi bi-plus-circle"></i> Добавить дисциплину
+            </button>
         </div>
-        <button class="btn btn-primary d-flex align-items-center gap-2" @onclick="GoToCoursesAdd">
-            <i class="bi bi-plus-circle"></i> Добавить курс
-        </button>
     </div>
 
     @if (courseList.Count == 0)
     {
-        <div class="text-center py-5">
-            <div class="empty-state">
-                <i class="bi bi-book text-muted" style="font-size: 4rem;"></i>
-                <h4 class="mt-3">Нет курсов</h4>
-                <p class="text-muted">Добавьте первый курс, чтобы начать</p>
-                <button class="btn btn-primary mt-2" @onclick="GoToCoursesAdd">
-                    <i class="bi bi-plus"></i> Добавить курс
-                </button>
-            </div>
+        <div class="empty-state">
+            <i class="bi bi-book empty-icon"></i>
+            <h4 class="empty-title">Нет курсов</h4>
+            <p class="empty-text">Добавьте первую дисциплину, чтобы начать</p>
+            <button class="btn btn-primary" @onclick="GoToCoursesAdd">
+                <i class="bi bi-plus"></i> Добавить курс
+            </button>
         </div>
     }
     else
     {
-        <div class="row g-4">
+        <div class="grid-layout">
             @foreach (var course in courseList)
             {
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h5 class="card-title fw-bold text-truncate">@course.Name</h5>
-                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">
-                                    ID: @course.Id
-                                </span>
-                            </div>
-                            <p class="card-text text-muted">@course.Description</p>
+                <div class="card-item">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">@course.Name</h5>
                         </div>
-                        <div class="card-footer bg-transparent border-top-0 pt-0">
-                            <div class="d-flex justify-content-end gap-2">
-                                <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
-                                        @onclick="@(() => NavigationManager.NavigateTo($"/courses/edit/{course.Id}"))">
-                                    <i class="bi bi-pencil"></i> Редактировать
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
-                                        @onclick="@(() => DeleteCourse(course.Id))">
-                                    <i class="bi bi-trash"></i> Удалить
-                                </button>
-                            </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">@course.Description</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button class="btn btn-sm btn-outline-primary btn-action"
+                                    @onclick="@(() => NavigationManager.NavigateTo($"/courses/edit/{course.Id}"))">
+                                <i class="bi bi-pencil"></i> Редактировать
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-action"
+                                    @onclick="@(() => ShowDeleteConfirm(course.Id, course.Name))">
+                                <i class="bi bi-trash"></i> Удалить
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -65,8 +60,17 @@
     }
 </div>
 
+<ConfirmDialog @ref="deleteDialog"
+               Title="Удаление курса"
+               Icon="bi-trash"
+               Message="@($"Вы уверены, что хотите удалить дисциплину {courseToDeleteName}?")"
+               OnClose="OnDeleteDialogClosed" />
+
 @code {
     private List<Course> courseList = new();
+    private ConfirmDialog? deleteDialog;
+    private int courseToDeleteId;
+    private string courseToDeleteName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,12 +79,8 @@
 
     private async Task DeleteCourse(int id)
     {
-        bool confirmed = await ShowConfirmDialog("Удаление курса", "Вы уверены, что хотите удалить этот курс?");
-        if (confirmed)
-        {
-            await CourseService.DeleteCourseAsync(id);
-            courseList = (await CourseService.GetCoursesAsync()).ToList();
-        }
+        await CourseService.DeleteCourseAsync(id);
+        courseList = (await CourseService.GetCoursesAsync()).ToList();
     }
 
     private void GoToCoursesAdd()
@@ -88,25 +88,137 @@
         NavigationManager.NavigateTo("/courses/add");
     }
 
-    private async Task<bool> ShowConfirmDialog(string title, string message)
+    private void ShowDeleteConfirm(int id, string name)
     {
-        return await JSRuntime.InvokeAsync<bool>("confirm", message);
+        courseToDeleteId = id;
+        courseToDeleteName = name;
+        deleteDialog?.Show();
+    }
+
+    private async Task OnDeleteDialogClosed(bool confirmed)
+    {
+        if (confirmed)
+        {
+            await DeleteCourse(courseToDeleteId);
+        }
     }
 }
 
 <style>
-    .card {
-        transition: transform 0.2s, box-shadow 0.2s;
-        border-radius: 12px;
+    .page-header {
+        margin-bottom: 2rem;
     }
 
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1) !important;
-        }
+    .page-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+    }
+
+    .btn-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
 
     .empty-state {
-        max-width: 400px;
-        margin: 0 auto;
+        text-align: center;
+        padding: 4rem 1rem;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #bdc3c7;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-title {
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-text {
+        color: #7f8c8d;
+        margin-bottom: 2rem;
+    }
+
+    .grid-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .card-item {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+        .card-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-color: #3498db;
+        }
+
+    .card-header {
+        padding: 1.25rem 1.25rem 0.5rem;
+    }
+
+    .card-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    .badge-id {
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .card-body {
+        padding: 0.5rem 1.25rem 1rem;
+        flex-grow: 1;
+    }
+
+    .card-text {
+        color: #7f8c8d;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .card-footer {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid #e9ecef;
+        background: #f8f9fa;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+
+    .btn-action {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
     }
 </style>

@@ -1,38 +1,120 @@
 ﻿@page "/students/edit/{Id:int}"
+@using StudentJournal.Data.Models
 @inject IStudentService StudentService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<h3>Редактировать студента</h3>
-
-@if (editingStudent == null)
-{
-    <p>Загрузка...</p>
-}
-else
-{
-    <div class="mb-2">
-        <label>ФИО</label>
-        <input class="form-control" @bind="editingStudent.Name" />
-    </div>
-    <div class="mb-2">
-        <label>Институт</label>
-        <input class="form-control" @bind="editingStudent.Institute" />
-    </div>
-    <div class="mb-2">
-        <label>Группа</label>
-        <input class="form-control" @bind="editingStudent.Group" />
+<div class="container-fluid px-4">
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title">Редактировать студента</h2>
+                <p class="page-subtitle">Изменение информации о студенте</p>
+            </div>
+            <button class="btn btn-outline-secondary btn-with-icon"
+                    @onclick="@(() => NavigationManager.NavigateTo("/students"))">
+                <i class="bi bi-arrow-left"></i> Назад
+            </button>
+        </div>
     </div>
 
-    <button class="btn btn-success me-2" @onclick="@SaveStudent">Сохранить</button>
-    <button class="btn btn-secondary" @onclick="@(() => NavigationManager.NavigateTo("/students"))">Отмена</button>
-}
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            @if (editingStudent == null)
+            {
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Загрузка данных...</p>
+                </div>
+            }
+            else
+            {
+                <div class="form-card">
+                    <div class="form-header">
+                        <h5 class="form-title">Редактирование студента #@editingStudent.Id</h5>
+                    </div>
+                    <div class="form-body">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>ФИО студента</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-input"
+                                   @bind="editingStudent.Name"
+                                   placeholder="Введите полное имя студента"
+                                   required />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>Институт</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-input" @bind="editingStudent.Institute" required>
+                                <option value="">Выберите институт</option>
+                                @foreach (var institute in institutes)
+                                {
+                                    <option value="@institute">@institute</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span>Группа</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-input"
+                                   @bind="editingStudent.Group"
+                                   placeholder="Введите номер группы"
+                                   required />
+                        </div>
+
+                        <div class="form-footer">
+                            <div class="d-flex justify-content-end gap-3">
+                                <button type="button"
+                                        class="btn btn-outline-secondary btn-action"
+                                        @onclick="@(() => NavigationManager.NavigateTo("/students"))">
+                                    Отмена
+                                </button>
+                                <button type="button"
+                                        class="btn btn-primary btn-action"
+                                        @onclick="@SaveStudent"
+                                        disabled="@(!IsFormValid)">
+                                    <i class="bi bi-check-circle me-2"></i> Сохранить изменения
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
 
 @code {
     [Parameter]
     public int Id { get; set; }
 
     private Student? editingStudent;
+
+    private List<string> institutes = new List<string>
+    {
+        "Институт архитектуры и дизайна",
+        "Строительный институт",
+        "Высшая инженерная школа EG",
+        "Высшая школа цифровых технологий",
+        "Нефтегазовый институт",
+        "Институт сервиса и отраслевого управления",
+        "Технологический институт",
+        "Институт заочного и дистанционного образования"
+    };
+
+    private bool IsFormValid =>
+        editingStudent != null &&
+        !string.IsNullOrWhiteSpace(editingStudent.Name) &&
+        !string.IsNullOrWhiteSpace(editingStudent.Institute) &&
+        !string.IsNullOrWhiteSpace(editingStudent.Group);
 
     protected override async Task OnInitializedAsync()
     {
@@ -41,10 +123,147 @@ else
 
     private async Task SaveStudent()
     {
-        if (editingStudent != null)
+        if (editingStudent != null && IsFormValid)
         {
             await StudentService.UpdateStudentAsync(editingStudent);
             NavigationManager.NavigateTo("/students");
         }
     }
 }
+
+<style>
+    /* Стили такие же как в CoursesEdit.razor */
+    .loading-state {
+        text-align: center;
+        padding: 4rem 1rem;
+    }
+
+    .spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 0.25rem solid rgba(52, 152, 219, 0.2);
+        border-top: 0.25rem solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1.5rem;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .loading-state p {
+        color: #7f8c8d;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+    }
+
+    .btn-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+    }
+
+    .form-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .form-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .form-body {
+        padding: 1.5rem;
+    }
+
+    .form-footer {
+        padding: 1.5rem 1.5rem 0;
+        border-top: 1px solid #e9ecef;
+        margin-top: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    /* Стрелочки только для select */
+    select.form-input {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+    }
+
+    /* Для input стрелочек не должно быть */
+    input.form-input {
+        background-image: none;
+    }
+
+    .form-input:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.1);
+        outline: 0;
+    }
+
+    .btn-action {
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+    }
+</style>

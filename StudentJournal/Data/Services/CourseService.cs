@@ -1,19 +1,30 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StudentJournal.Data.Interfaces;
 using StudentJournal.Data.Models;
+using StudentJournal.Data.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace StudentJournal.Data.Services
 {
     public class CourseService : ICourseService
     {
         private readonly ApplicationDbContext _context;
-        public CourseService(ApplicationDbContext context) => _context = context;
 
-        public async Task<IEnumerable<Course>> GetCoursesAsync() =>
-            await _context.Courses.AsNoTracking().ToListAsync();
+        public CourseService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-        public async Task<Course?> GetCourseByIdAsync(int id) =>
-            await _context.Courses.FindAsync(id);
+        public async Task<IEnumerable<Course>> GetCoursesAsync()
+        {
+            return await _context.Courses.ToListAsync();
+        }
+
+        public async Task<Course?> GetCourseByIdAsync(int id)
+        {
+            return await _context.Courses.FindAsync(id);
+        }
 
         public async Task AddCourseAsync(Course course)
         {
@@ -21,15 +32,10 @@ namespace StudentJournal.Data.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateCourseAsync(Course course)
+        public async Task UpdateCourseAsync(Course updatedCourse)
         {
-            var existing = await _context.Courses.FindAsync(course.Id);
-            if (existing != null)
-            {
-                existing.Name = course.Name;
-                existing.Description = course.Description;
-                await _context.SaveChangesAsync();
-            }
+            _context.Courses.Update(updatedCourse);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteCourseAsync(int id)

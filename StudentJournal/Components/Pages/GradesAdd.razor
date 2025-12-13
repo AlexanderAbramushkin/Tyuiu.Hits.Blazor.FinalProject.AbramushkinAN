@@ -1,44 +1,127 @@
 ﻿@page "/grades/add"
+@using StudentJournal.Data.Models
 @inject IGradeService GradeService
 @inject IStudentService StudentService
 @inject ICourseService CourseService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
-<h3>Добавить оценку</h3>
+<div class="container-fluid px-4">
+    <div class="page-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title">Добавить оценку</h2>
+                <p class="page-subtitle">Создание новой записи об оценке</p>
+            </div>
+            <button class="btn btn-outline-secondary btn-with-icon"
+                    @onclick="@(() => NavigationManager.NavigateTo("/grades"))">
+                <i class="bi bi-arrow-left"></i> Назад
+            </button>
+        </div>
+    </div>
 
-<div class="mb-2">
-    <label>Студент</label>
-    <select class="form-select" @bind="NewGrade.StudentId">
-        <option value="">Выберите студента</option>
-        @foreach (var student in studentList)
-        {
-            <option value="@student.Id">@student.Name (@student.Group)</option>
-        }
-    </select>
-</div>
-<div class="mb-2">
-    <label>Курс</label>
-    <select class="form-select" @bind="NewGrade.CourseId">
-        <option value="">Выберите курс</option>
-        @foreach (var course in courseList)
-        {
-            <option value="@course.Id">@course.Name</option>
-        }
-    </select>
-</div>
-<div class="mb-2">
-    <label>Оценка</label>
-    <input type="number" class="form-control" min="0" max="100" @bind="NewGrade.Score" />
-</div>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <div class="form-header">
+                    <h5 class="form-title">Информация об оценке</h5>
+                </div>
+                <div class="form-body">
+                    @if (errorMessage != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-circle me-2"></i> @errorMessage
+                        </div>
+                    }
 
-<button class="btn btn-success me-2" @onclick="@SaveGrade">Сохранить</button>
-<button class="btn btn-secondary" @onclick="@(() => NavigationManager.NavigateTo("/grades"))">Отмена</button>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>Студент</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-input @(HasError("StudentId") ? "is-invalid" : "")"
+                                @bind="NewGrade.StudentId"
+                                required>
+                            <option value="">Выберите студента</option>
+                            @foreach (var student in studentList)
+                            {
+                                <option value="@student.Id">@student.Name (@student.Group)</option>
+                            }
+                        </select>
+                        @if (HasError("StudentId"))
+                        {
+                            <div class="invalid-feedback">@GetError("StudentId")</div>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>Курс</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-input @(HasError("CourseId") ? "is-invalid" : "")"
+                                @bind="NewGrade.CourseId"
+                                required>
+                            <option value="">Выберите учебную дисциплину</option>
+                            @foreach (var course in courseList)
+                            {
+                                <option value="@course.Id">@course.Name</option>
+                            }
+                        </select>
+                        @if (HasError("CourseId"))
+                        {
+                            <div class="invalid-feedback">@GetError("CourseId")</div>
+                        }
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span>Оценка</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <div class="score-input-container">
+                            <input type="number"
+                                   class="form-input @(HasError("Score") ? "is-invalid" : "")"
+                                   min="0"
+                                   max="100"
+                                   @bind="NewGrade.Score"
+                                   @bind:event="oninput"
+                                   placeholder="0-100"
+                                   required />
+                            <div class="score-hint">Введите оценку от 0 до 100</div>
+                        </div>
+                        @if (HasError("Score"))
+                        {
+                            <div class="invalid-feedback">@GetError("Score")</div>
+                        }
+                    </div>
+
+                    <div class="form-footer">
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-action"
+                                    @onclick="@(() => NavigationManager.NavigateTo("/grades"))">
+                                Отмена
+                            </button>
+                            <button type="button"
+                                    class="btn btn-primary btn-action"
+                                    @onclick="@SaveGrade">
+                                <i class="bi bi-check-circle me-2"></i> Сохранить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
     private Grade NewGrade = new();
     private List<Student> studentList = new();
     private List<Course> courseList = new();
+    private string? errorMessage;
+    private Dictionary<string, List<string>> validationErrors = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -46,9 +129,211 @@
         courseList = (await CourseService.GetCoursesAsync()).ToList();
     }
 
+    private bool ValidateForm()
+    {
+        validationErrors.Clear();
+        errorMessage = null;
+
+        if (NewGrade.StudentId <= 0)
+        {
+            AddError("StudentId", "Выберите студента");
+        }
+
+        if (NewGrade.CourseId <= 0)
+        {
+            AddError("CourseId", "Выберите курс");
+        }
+
+        if (NewGrade.Score < 0 || NewGrade.Score > 100)
+        {
+            AddError("Score", "Оценка должна быть от 0 до 100 баллов");
+        }
+
+        return validationErrors.Count == 0;
+    }
+
+    private void AddError(string field, string message)
+    {
+        if (!validationErrors.ContainsKey(field))
+        {
+            validationErrors[field] = new List<string>();
+        }
+        validationErrors[field].Add(message);
+    }
+
+    private bool HasError(string field)
+    {
+        return validationErrors.ContainsKey(field);
+    }
+
+    private string GetError(string field)
+    {
+        return validationErrors.ContainsKey(field) ? validationErrors[field].FirstOrDefault() ?? "" : "";
+    }
+
     private async Task SaveGrade()
     {
-        await GradeService.AddGradeAsync(NewGrade);
-        NavigationManager.NavigateTo("/grades");
+        if (!ValidateForm())
+        {
+            errorMessage = "Пожалуйста, исправьте ошибки в форме";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            await GradeService.AddGradeAsync(NewGrade);
+            NavigationManager.NavigateTo("/grades");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка при сохранении: {ex.Message}";
+            StateHasChanged();
+        }
     }
 }
+
+<style>
+    .alert-danger {
+        background-color: rgba(231, 76, 60, 0.1);
+        border: 1px solid rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .is-invalid {
+        border-color: #e74c3c !important;
+    }
+
+        .is-invalid:focus {
+            box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.1) !important;
+        }
+
+    .invalid-feedback {
+        display: block;
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Остальные стили остаются такими же */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+    }
+
+    .btn-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e9ecef;
+        overflow: hidden;
+    }
+
+    .form-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .form-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .form-body {
+        padding: 1.5rem;
+    }
+
+    .form-footer {
+        padding: 1.5rem 1.5rem 0;
+        border-top: 1px solid #e9ecef;
+        margin-top: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        transition: all 0.2s;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1em;
+    }
+
+        .form-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.1);
+            outline: 0;
+        }
+
+        .form-input[type="number"] {
+            width: 120px;
+        }
+
+    .score-input-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .score-hint {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+    }
+
+    .btn-action {
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+    }
+</style>
