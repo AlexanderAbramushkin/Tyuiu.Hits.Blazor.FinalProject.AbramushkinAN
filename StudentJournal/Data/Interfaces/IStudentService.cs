@@ -14,5 +14,7 @@ namespace StudentJournal.Data.Interfaces
         Task<IEnumerable<Student>> GetStudentsByGroupAsync(string group);
         Task<IEnumerable<Student>> GetStudentsByCourseAsync(int course);
         Task<bool> StudentExistsAsync(string name, string group);
+        Task<IEnumerable<string>> GetDistinctInstitutesAsync();
+        Task<IEnumerable<string>> GetDistinctGroupsAsync();
     }
 }

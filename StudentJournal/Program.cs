@@ -50,6 +50,11 @@ namespace StudentJournal
 
             var app = builder.Build();
 
+            if (!app.Urls.Any())
+            {
+                app.Urls.Add("http://localhost:5000");
+            }
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
@@ -60,7 +65,7 @@ namespace StudentJournal
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseAntiforgery();
 
@@ -100,7 +105,32 @@ namespace StudentJournal
                 }
             }
 
-            Console.WriteLine("Приложение StudentJournal запущено!");
+            // Явно указываем порт
+            if (!app.Urls.Any())
+            {
+                app.Urls.Add("http://localhost:5000");
+            }
+
+            // Автоматически открываем браузер
+            app.Lifetime.ApplicationStarted.Register(() =>
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(
+                        new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = "http://localhost:5000",
+                            UseShellExecute = true
+                        });
+                }
+                catch { /* Игнорируем ошибки открытия браузера */ }
+            });
+
+            Console.WriteLine("=".PadRight(50, '='));
+            Console.WriteLine("StudentJournal запущен!");
+            Console.WriteLine("Откройте: http://localhost:5000");
+            Console.WriteLine("=".PadRight(50, '='));
+
             await app.RunAsync();
         }
     }

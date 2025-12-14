@@ -90,5 +90,24 @@ namespace StudentJournal.Data.Services
                 .Where(s => s.Course == course)
                 .ToListAsync();
         }
+
+        // Новые методы для фильтрации
+        public async Task<IEnumerable<string>> GetDistinctInstitutesAsync()
+        {
+            return await _context.Students
+                .Select(s => s.Institute)
+                .Distinct()
+                .OrderBy(i => i)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<string>> GetDistinctGroupsAsync()
+        {
+            return await _context.Students
+                .Select(s => s.Group)
+                .Distinct()
+                .OrderBy(g => g)
+                .ToListAsync();
+        }
     }
 }
