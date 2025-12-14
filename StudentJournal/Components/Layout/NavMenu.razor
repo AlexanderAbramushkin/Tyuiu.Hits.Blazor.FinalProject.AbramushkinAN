@@ -3,36 +3,38 @@
 <div class="navbar-nav">
     <div class="nav-item px-3">
         <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
-            <span class="bi bi-house-door me-2"></span> Главная
+            <div class="nav-icon">
+                <i class="bi bi-house-door-fill"></i>
+            </div>
+            <span class="nav-text">Главная</span>
         </NavLink>
     </div>
 
     <div class="nav-item px-3">
         <NavLink class="nav-link" href="students">
-            <span class="bi bi-people me-2"></span> Студенты
+            <div class="nav-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <span class="nav-text">Студенты</span>
         </NavLink>
     </div>
 
     <div class="nav-item px-3">
         <NavLink class="nav-link" href="courses">
-            <span class="bi bi-book me-2"></span> Учебные дисциплины
+            <div class="nav-icon">
+                <i class="bi bi-book-fill"></i>
+            </div>
+            <span class="nav-text">Дисциплины</span>
         </NavLink>
     </div>
 
     <div class="nav-item px-3">
         <NavLink class="nav-link" href="grades">
-            <span class="bi bi-clipboard-data me-2"></span> Оценки
-        </NavLink>
-    </div>
-
-    <div class="nav-item px-3 mt-3 border-top pt-3">
-        <div class="user-info text-center">
-            <div class="user-avatar mb-2">
-                <i class="bi bi-person-circle" style="font-size: 2.5rem; color: #0d6efd;"></i>
+            <div class="nav-icon">
+                <i class="bi bi-clipboard-data-fill"></i>
             </div>
-            <p class="mb-1 small fw-semibold">Абрамушкин А.</p>
-            <p class="mb-0 small text-muted">ИИПБ-24-2</p>
-        </div>
+            <span class="nav-text">Оценки</span>
+        </NavLink>
     </div>
 </div>
 
@@ -42,37 +44,67 @@
     }
 
     .nav-link {
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
         transition: all 0.3s ease;
         color: #495057;
         font-weight: 500;
+        text-decoration: none;
+    }
+
+        .nav-link:hover {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);
+            color: #0d6efd;
+            transform: translateX(8px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #0d6efd 0%, #25a1ff 100%);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+        }
+
+            .nav-link.active:hover {
+                background: linear-gradient(135deg, #0b5ed7 0%, #1e90ff 100%);
+                color: white;
+            }
+
+    .nav-icon {
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
     }
 
-    .nav-link:hover {
-        background-color: rgba(13, 110, 253, 0.1);
+    .nav-link:hover .nav-icon {
+        background: rgba(13, 110, 253, 0.1);
         color: #0d6efd;
-        transform: translateX(5px);
     }
 
-    .nav-link.active {
-        background-color: #0d6efd;
+    .nav-link.active .nav-icon {
+        background: rgba(255, 255, 255, 0.2);
         color: white;
-        font-weight: 600;
     }
 
-    .nav-link.active:hover {
-        background-color: #0b5ed7;
-        color: white;
+    .nav-text {
+        font-size: 0.95rem;
     }
 
     .user-info {
         padding: 1rem;
         background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-radius: 10px;
+        border-radius: 12px;
         border: 1px solid #dee2e6;
+        margin: 1rem;
     }
 
     .user-avatar {
@@ -84,10 +116,9 @@
         align-items: center;
         justify-content: center;
         margin: 0 auto;
-        border: 2px solid #0d6efd;
-    }
-
-    .bi {
-        font-size: 1.1rem;
+        border: 3px solid #0d6efd;
+        font-size: 1.5rem;
+        color: #0d6efd;
+        font-weight: bold;
     }
 </style>

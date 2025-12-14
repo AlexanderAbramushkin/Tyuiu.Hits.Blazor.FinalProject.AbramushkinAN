@@ -182,8 +182,21 @@
 
         try
         {
+            var exists = await GradeService.GradeExistsAsync(NewGrade.StudentId, NewGrade.CourseId);
+            if (exists)
+            {
+                errorMessage = "Оценка по этому предмету для студента уже существует!";
+                StateHasChanged();
+                return;
+            }
+
             await GradeService.AddGradeAsync(NewGrade);
             NavigationManager.NavigateTo("/grades");
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("уже существует"))
+        {
+            errorMessage = ex.Message;
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -191,6 +204,7 @@
             StateHasChanged();
         }
     }
+
 }
 
 <style>
@@ -220,7 +234,6 @@
         margin-top: 0.5rem;
     }
 
-    /* Остальные стили остаются такими же */
     .page-header {
         margin-bottom: 2rem;
     }

@@ -21,7 +21,10 @@ namespace StudentJournal.Data.Models
         [MaxLength(50)]
         public string Group { get; set; } = string.Empty;
 
-        // Убираем virtual для упрощения сериализации
+        [Required]
+        [Range(1, 5)]
+        public int Course { get; set; } = 1; // Значение по умолчанию - 1 курс
+
         public ICollection<Grade> Grades { get; set; } = new List<Grade>();
     }
 }

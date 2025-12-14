@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentJournal.Data;
 
@@ -11,9 +12,11 @@ using StudentJournal.Data;
 namespace StudentJournal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251214081052_GradesOnlyOne_7Subjects")]
+    partial class GradesOnlyOne_7Subjects
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -240,7 +243,7 @@ namespace StudentJournal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
 
                     b.HasData(
                         new
@@ -311,7 +314,7 @@ namespace StudentJournal.Migrations
                     b.HasIndex("StudentId", "CourseId")
                         .IsUnique();
 
-                    b.ToTable("Grades", (string)null);
+                    b.ToTable("Grades");
 
                     b.HasData(
                         new
@@ -1324,7 +1327,7 @@ namespace StudentJournal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
 
                     b.HasData(
                         new

@@ -25,6 +25,13 @@
                     <h5 class="form-title">Основная информация</h5>
                 </div>
                 <div class="form-body">
+                    @if (errorMessage != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-circle me-2"></i> @errorMessage
+                        </div>
+                    }
+
                     <div class="form-group">
                         <label class="form-label">
                             <span>Название дисциплины</span>
@@ -69,18 +76,61 @@
 
 @code {
     private Course NewCourse = new();
+    private string? errorMessage;
 
     private async Task SaveCourse()
     {
-        if (string.IsNullOrWhiteSpace(NewCourse.Name))
-            return;
+        errorMessage = null;
 
-        await CourseService.AddCourseAsync(NewCourse);
-        NavigationManager.NavigateTo("/courses");
+        if (string.IsNullOrWhiteSpace(NewCourse.Name))
+        {
+            errorMessage = "Введите название дисциплины";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            var exists = await CourseService.CourseNameExistsAsync(NewCourse.Name);
+            if (exists)
+            {
+                errorMessage = "Учебная дисциплина с таким названием уже существует!";
+                StateHasChanged();
+                return;
+            }
+
+            await CourseService.AddCourseAsync(NewCourse);
+            NavigationManager.NavigateTo("/courses");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка: {ex.Message}";
+            StateHasChanged();
+        }
     }
 }
 
+
 <style>
+    .alert-danger {
+        background-color: rgba(231, 76, 60, 0.1);
+        border: 1px solid rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .is-invalid {
+        border-color: #e74c3c !important;
+    }
+
+        .is-invalid:focus {
+            box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.1) !important;
+        }
+
     .page-header {
         margin-bottom: 2rem;
     }

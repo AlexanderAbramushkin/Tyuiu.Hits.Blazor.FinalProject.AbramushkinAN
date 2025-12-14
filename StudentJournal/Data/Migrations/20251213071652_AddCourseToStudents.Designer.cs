@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentJournal.Data;
 
@@ -11,9 +12,11 @@ using StudentJournal.Data;
 namespace StudentJournal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251213071652_AddCourseToStudents")]
+    partial class AddCourseToStudents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -240,7 +243,7 @@ namespace StudentJournal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
 
                     b.HasData(
                         new
@@ -308,206 +311,205 @@ namespace StudentJournal.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("StudentId", "CourseId")
-                        .IsUnique();
+                    b.HasIndex("StudentId");
 
-                    b.ToTable("Grades", (string)null);
+                    b.ToTable("Grades");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
                             CourseId = 1,
-                            Score = 84,
+                            Score = 91,
                             StudentId = 1
                         },
                         new
                         {
                             Id = 2,
                             CourseId = 2,
-                            Score = 57,
+                            Score = 94,
                             StudentId = 1
                         },
                         new
                         {
                             Id = 3,
                             CourseId = 3,
-                            Score = 56,
+                            Score = 50,
                             StudentId = 1
                         },
                         new
                         {
                             Id = 4,
                             CourseId = 4,
-                            Score = 76,
+                            Score = 98,
                             StudentId = 1
                         },
                         new
                         {
                             Id = 5,
                             CourseId = 5,
-                            Score = 58,
+                            Score = 95,
                             StudentId = 1
                         },
                         new
                         {
                             Id = 6,
                             CourseId = 6,
-                            Score = 63,
+                            Score = 72,
                             StudentId = 1
                         },
                         new
                         {
                             Id = 7,
                             CourseId = 7,
-                            Score = 86,
+                            Score = 95,
                             StudentId = 1
                         },
                         new
                         {
                             Id = 8,
                             CourseId = 1,
-                            Score = 76,
+                            Score = 100,
                             StudentId = 2
                         },
                         new
                         {
                             Id = 9,
                             CourseId = 2,
-                            Score = 58,
+                            Score = 89,
                             StudentId = 2
                         },
                         new
                         {
                             Id = 10,
                             CourseId = 3,
-                            Score = 88,
+                            Score = 93,
                             StudentId = 2
                         },
                         new
                         {
                             Id = 11,
                             CourseId = 4,
-                            Score = 61,
+                            Score = 78,
                             StudentId = 2
                         },
                         new
                         {
                             Id = 12,
                             CourseId = 5,
-                            Score = 63,
+                            Score = 67,
                             StudentId = 2
                         },
                         new
                         {
                             Id = 13,
                             CourseId = 6,
-                            Score = 75,
+                            Score = 78,
                             StudentId = 2
                         },
                         new
                         {
                             Id = 14,
                             CourseId = 7,
-                            Score = 66,
+                            Score = 64,
                             StudentId = 2
                         },
                         new
                         {
                             Id = 15,
                             CourseId = 1,
-                            Score = 69,
+                            Score = 97,
                             StudentId = 3
                         },
                         new
                         {
                             Id = 16,
                             CourseId = 2,
-                            Score = 63,
+                            Score = 72,
                             StudentId = 3
                         },
                         new
                         {
                             Id = 17,
                             CourseId = 3,
-                            Score = 76,
+                            Score = 91,
                             StudentId = 3
                         },
                         new
                         {
                             Id = 18,
                             CourseId = 4,
-                            Score = 51,
+                            Score = 74,
                             StudentId = 3
                         },
                         new
                         {
                             Id = 19,
                             CourseId = 5,
-                            Score = 91,
+                            Score = 68,
                             StudentId = 3
                         },
                         new
                         {
                             Id = 20,
                             CourseId = 6,
-                            Score = 79,
+                            Score = 51,
                             StudentId = 3
                         },
                         new
                         {
                             Id = 21,
                             CourseId = 7,
-                            Score = 70,
+                            Score = 88,
                             StudentId = 3
                         },
                         new
                         {
                             Id = 22,
                             CourseId = 1,
-                            Score = 57,
+                            Score = 64,
                             StudentId = 4
                         },
                         new
                         {
                             Id = 23,
                             CourseId = 2,
-                            Score = 54,
+                            Score = 66,
                             StudentId = 4
                         },
                         new
                         {
                             Id = 24,
                             CourseId = 3,
-                            Score = 85,
+                            Score = 100,
                             StudentId = 4
                         },
                         new
                         {
                             Id = 25,
                             CourseId = 4,
-                            Score = 91,
+                            Score = 51,
                             StudentId = 4
                         },
                         new
                         {
                             Id = 26,
                             CourseId = 5,
-                            Score = 77,
+                            Score = 76,
                             StudentId = 4
                         },
                         new
                         {
                             Id = 27,
                             CourseId = 6,
-                            Score = 52,
+                            Score = 63,
                             StudentId = 4
                         },
                         new
                         {
                             Id = 28,
                             CourseId = 7,
-                            Score = 86,
+                            Score = 74,
                             StudentId = 4
                         },
                         new
@@ -521,140 +523,140 @@ namespace StudentJournal.Migrations
                         {
                             Id = 30,
                             CourseId = 2,
-                            Score = 96,
+                            Score = 68,
                             StudentId = 5
                         },
                         new
                         {
                             Id = 31,
                             CourseId = 3,
-                            Score = 85,
+                            Score = 57,
                             StudentId = 5
                         },
                         new
                         {
                             Id = 32,
                             CourseId = 4,
-                            Score = 76,
+                            Score = 80,
                             StudentId = 5
                         },
                         new
                         {
                             Id = 33,
                             CourseId = 5,
-                            Score = 59,
+                            Score = 76,
                             StudentId = 5
                         },
                         new
                         {
                             Id = 34,
                             CourseId = 6,
-                            Score = 52,
+                            Score = 88,
                             StudentId = 5
                         },
                         new
                         {
                             Id = 35,
                             CourseId = 7,
-                            Score = 65,
+                            Score = 80,
                             StudentId = 5
                         },
                         new
                         {
                             Id = 36,
                             CourseId = 1,
-                            Score = 79,
+                            Score = 53,
                             StudentId = 6
                         },
                         new
                         {
                             Id = 37,
                             CourseId = 2,
-                            Score = 91,
+                            Score = 87,
                             StudentId = 6
                         },
                         new
                         {
                             Id = 38,
                             CourseId = 3,
-                            Score = 50,
+                            Score = 77,
                             StudentId = 6
                         },
                         new
                         {
                             Id = 39,
                             CourseId = 4,
-                            Score = 77,
+                            Score = 55,
                             StudentId = 6
                         },
                         new
                         {
                             Id = 40,
                             CourseId = 5,
-                            Score = 91,
+                            Score = 69,
                             StudentId = 6
                         },
                         new
                         {
                             Id = 41,
                             CourseId = 6,
-                            Score = 88,
+                            Score = 75,
                             StudentId = 6
                         },
                         new
                         {
                             Id = 42,
                             CourseId = 7,
-                            Score = 69,
+                            Score = 51,
                             StudentId = 6
                         },
                         new
                         {
                             Id = 43,
                             CourseId = 1,
-                            Score = 57,
+                            Score = 93,
                             StudentId = 7
                         },
                         new
                         {
                             Id = 44,
                             CourseId = 2,
-                            Score = 51,
+                            Score = 74,
                             StudentId = 7
                         },
                         new
                         {
                             Id = 45,
                             CourseId = 3,
-                            Score = 52,
+                            Score = 64,
                             StudentId = 7
                         },
                         new
                         {
                             Id = 46,
                             CourseId = 4,
-                            Score = 89,
+                            Score = 64,
                             StudentId = 7
                         },
                         new
                         {
                             Id = 47,
                             CourseId = 5,
-                            Score = 81,
+                            Score = 92,
                             StudentId = 7
                         },
                         new
                         {
                             Id = 48,
                             CourseId = 6,
-                            Score = 55,
+                            Score = 71,
                             StudentId = 7
                         },
                         new
                         {
                             Id = 49,
                             CourseId = 7,
-                            Score = 62,
+                            Score = 51,
                             StudentId = 7
                         },
                         new
@@ -668,70 +670,70 @@ namespace StudentJournal.Migrations
                         {
                             Id = 51,
                             CourseId = 2,
-                            Score = 64,
+                            Score = 86,
                             StudentId = 8
                         },
                         new
                         {
                             Id = 52,
                             CourseId = 3,
-                            Score = 83,
+                            Score = 67,
                             StudentId = 8
                         },
                         new
                         {
                             Id = 53,
                             CourseId = 4,
-                            Score = 57,
+                            Score = 97,
                             StudentId = 8
                         },
                         new
                         {
                             Id = 54,
                             CourseId = 5,
-                            Score = 52,
+                            Score = 78,
                             StudentId = 8
                         },
                         new
                         {
                             Id = 55,
                             CourseId = 6,
-                            Score = 80,
+                            Score = 68,
                             StudentId = 8
                         },
                         new
                         {
                             Id = 56,
                             CourseId = 7,
-                            Score = 76,
+                            Score = 96,
                             StudentId = 8
                         },
                         new
                         {
                             Id = 57,
                             CourseId = 1,
-                            Score = 52,
+                            Score = 92,
                             StudentId = 9
                         },
                         new
                         {
                             Id = 58,
                             CourseId = 2,
-                            Score = 71,
+                            Score = 52,
                             StudentId = 9
                         },
                         new
                         {
                             Id = 59,
                             CourseId = 3,
-                            Score = 86,
+                            Score = 61,
                             StudentId = 9
                         },
                         new
                         {
                             Id = 60,
                             CourseId = 4,
-                            Score = 82,
+                            Score = 84,
                             StudentId = 9
                         },
                         new
@@ -745,182 +747,182 @@ namespace StudentJournal.Migrations
                         {
                             Id = 62,
                             CourseId = 6,
-                            Score = 50,
+                            Score = 54,
                             StudentId = 9
                         },
                         new
                         {
                             Id = 63,
                             CourseId = 7,
-                            Score = 68,
+                            Score = 80,
                             StudentId = 9
                         },
                         new
                         {
                             Id = 64,
                             CourseId = 1,
-                            Score = 63,
+                            Score = 60,
                             StudentId = 10
                         },
                         new
                         {
                             Id = 65,
                             CourseId = 2,
-                            Score = 53,
+                            Score = 78,
                             StudentId = 10
                         },
                         new
                         {
                             Id = 66,
                             CourseId = 3,
-                            Score = 86,
+                            Score = 90,
                             StudentId = 10
                         },
                         new
                         {
                             Id = 67,
                             CourseId = 4,
-                            Score = 53,
+                            Score = 69,
                             StudentId = 10
                         },
                         new
                         {
                             Id = 68,
                             CourseId = 5,
-                            Score = 73,
+                            Score = 80,
                             StudentId = 10
                         },
                         new
                         {
                             Id = 69,
                             CourseId = 6,
-                            Score = 50,
+                            Score = 96,
                             StudentId = 10
                         },
                         new
                         {
                             Id = 70,
                             CourseId = 7,
-                            Score = 90,
+                            Score = 79,
                             StudentId = 10
                         },
                         new
                         {
                             Id = 71,
                             CourseId = 1,
-                            Score = 72,
+                            Score = 66,
                             StudentId = 11
                         },
                         new
                         {
                             Id = 72,
                             CourseId = 2,
-                            Score = 76,
+                            Score = 62,
                             StudentId = 11
                         },
                         new
                         {
                             Id = 73,
                             CourseId = 3,
-                            Score = 75,
+                            Score = 62,
                             StudentId = 11
                         },
                         new
                         {
                             Id = 74,
                             CourseId = 4,
-                            Score = 50,
+                            Score = 98,
                             StudentId = 11
                         },
                         new
                         {
                             Id = 75,
                             CourseId = 5,
-                            Score = 92,
+                            Score = 98,
                             StudentId = 11
                         },
                         new
                         {
                             Id = 76,
                             CourseId = 6,
-                            Score = 50,
+                            Score = 65,
                             StudentId = 11
                         },
                         new
                         {
                             Id = 77,
                             CourseId = 7,
-                            Score = 50,
+                            Score = 54,
                             StudentId = 11
                         },
                         new
                         {
                             Id = 78,
                             CourseId = 1,
-                            Score = 53,
+                            Score = 65,
                             StudentId = 12
                         },
                         new
                         {
                             Id = 79,
                             CourseId = 2,
-                            Score = 83,
+                            Score = 52,
                             StudentId = 12
                         },
                         new
                         {
                             Id = 80,
                             CourseId = 3,
-                            Score = 51,
+                            Score = 56,
                             StudentId = 12
                         },
                         new
                         {
                             Id = 81,
                             CourseId = 4,
-                            Score = 96,
+                            Score = 70,
                             StudentId = 12
                         },
                         new
                         {
                             Id = 82,
                             CourseId = 5,
-                            Score = 97,
+                            Score = 61,
                             StudentId = 12
                         },
                         new
                         {
                             Id = 83,
                             CourseId = 6,
-                            Score = 73,
+                            Score = 51,
                             StudentId = 12
                         },
                         new
                         {
                             Id = 84,
                             CourseId = 7,
-                            Score = 69,
+                            Score = 94,
                             StudentId = 12
                         },
                         new
                         {
                             Id = 85,
                             CourseId = 1,
-                            Score = 81,
+                            Score = 64,
                             StudentId = 13
                         },
                         new
                         {
                             Id = 86,
                             CourseId = 2,
-                            Score = 52,
+                            Score = 82,
                             StudentId = 13
                         },
                         new
                         {
                             Id = 87,
                             CourseId = 3,
-                            Score = 69,
+                            Score = 60,
                             StudentId = 13
                         },
                         new
@@ -934,364 +936,364 @@ namespace StudentJournal.Migrations
                         {
                             Id = 89,
                             CourseId = 5,
-                            Score = 72,
+                            Score = 95,
                             StudentId = 13
                         },
                         new
                         {
                             Id = 90,
                             CourseId = 6,
-                            Score = 90,
+                            Score = 60,
                             StudentId = 13
                         },
                         new
                         {
                             Id = 91,
                             CourseId = 7,
-                            Score = 77,
+                            Score = 85,
                             StudentId = 13
                         },
                         new
                         {
                             Id = 92,
                             CourseId = 1,
-                            Score = 70,
+                            Score = 85,
                             StudentId = 14
                         },
                         new
                         {
                             Id = 93,
                             CourseId = 2,
-                            Score = 65,
+                            Score = 63,
                             StudentId = 14
                         },
                         new
                         {
                             Id = 94,
                             CourseId = 3,
-                            Score = 96,
+                            Score = 83,
                             StudentId = 14
                         },
                         new
                         {
                             Id = 95,
                             CourseId = 4,
-                            Score = 79,
+                            Score = 71,
                             StudentId = 14
                         },
                         new
                         {
                             Id = 96,
                             CourseId = 5,
-                            Score = 87,
+                            Score = 68,
                             StudentId = 14
                         },
                         new
                         {
                             Id = 97,
                             CourseId = 6,
-                            Score = 50,
+                            Score = 95,
                             StudentId = 14
                         },
                         new
                         {
                             Id = 98,
                             CourseId = 7,
-                            Score = 94,
+                            Score = 98,
                             StudentId = 14
                         },
                         new
                         {
                             Id = 99,
                             CourseId = 1,
-                            Score = 98,
+                            Score = 67,
                             StudentId = 15
                         },
                         new
                         {
                             Id = 100,
                             CourseId = 2,
-                            Score = 66,
+                            Score = 79,
                             StudentId = 15
                         },
                         new
                         {
                             Id = 101,
                             CourseId = 3,
-                            Score = 86,
+                            Score = 89,
                             StudentId = 15
                         },
                         new
                         {
                             Id = 102,
                             CourseId = 4,
-                            Score = 58,
+                            Score = 80,
                             StudentId = 15
                         },
                         new
                         {
                             Id = 103,
                             CourseId = 5,
-                            Score = 55,
+                            Score = 56,
                             StudentId = 15
                         },
                         new
                         {
                             Id = 104,
                             CourseId = 6,
-                            Score = 73,
+                            Score = 100,
                             StudentId = 15
                         },
                         new
                         {
                             Id = 105,
                             CourseId = 7,
-                            Score = 66,
+                            Score = 87,
                             StudentId = 15
                         },
                         new
                         {
                             Id = 106,
                             CourseId = 1,
-                            Score = 89,
+                            Score = 66,
                             StudentId = 16
                         },
                         new
                         {
                             Id = 107,
                             CourseId = 2,
-                            Score = 57,
+                            Score = 74,
                             StudentId = 16
                         },
                         new
                         {
                             Id = 108,
                             CourseId = 3,
-                            Score = 56,
+                            Score = 63,
                             StudentId = 16
                         },
                         new
                         {
                             Id = 109,
                             CourseId = 4,
-                            Score = 60,
+                            Score = 76,
                             StudentId = 16
                         },
                         new
                         {
                             Id = 110,
                             CourseId = 5,
-                            Score = 80,
+                            Score = 82,
                             StudentId = 16
                         },
                         new
                         {
                             Id = 111,
                             CourseId = 6,
-                            Score = 76,
+                            Score = 61,
                             StudentId = 16
                         },
                         new
                         {
                             Id = 112,
                             CourseId = 7,
-                            Score = 100,
+                            Score = 84,
                             StudentId = 16
                         },
                         new
                         {
                             Id = 113,
                             CourseId = 1,
-                            Score = 89,
+                            Score = 88,
                             StudentId = 17
                         },
                         new
                         {
                             Id = 114,
                             CourseId = 2,
-                            Score = 84,
+                            Score = 58,
                             StudentId = 17
                         },
                         new
                         {
                             Id = 115,
                             CourseId = 3,
-                            Score = 86,
+                            Score = 59,
                             StudentId = 17
                         },
                         new
                         {
                             Id = 116,
                             CourseId = 4,
-                            Score = 64,
+                            Score = 86,
                             StudentId = 17
                         },
                         new
                         {
                             Id = 117,
                             CourseId = 5,
-                            Score = 78,
+                            Score = 50,
                             StudentId = 17
                         },
                         new
                         {
                             Id = 118,
                             CourseId = 6,
-                            Score = 100,
+                            Score = 65,
                             StudentId = 17
                         },
                         new
                         {
                             Id = 119,
                             CourseId = 7,
-                            Score = 83,
+                            Score = 88,
                             StudentId = 17
                         },
                         new
                         {
                             Id = 120,
                             CourseId = 1,
-                            Score = 51,
+                            Score = 72,
                             StudentId = 18
                         },
                         new
                         {
                             Id = 121,
                             CourseId = 2,
-                            Score = 67,
+                            Score = 69,
                             StudentId = 18
                         },
                         new
                         {
                             Id = 122,
                             CourseId = 3,
-                            Score = 97,
+                            Score = 96,
                             StudentId = 18
                         },
                         new
                         {
                             Id = 123,
                             CourseId = 4,
-                            Score = 51,
+                            Score = 66,
                             StudentId = 18
                         },
                         new
                         {
                             Id = 124,
                             CourseId = 5,
-                            Score = 61,
+                            Score = 83,
                             StudentId = 18
                         },
                         new
                         {
                             Id = 125,
                             CourseId = 6,
-                            Score = 63,
+                            Score = 66,
                             StudentId = 18
                         },
                         new
                         {
                             Id = 126,
                             CourseId = 7,
-                            Score = 51,
+                            Score = 61,
                             StudentId = 18
                         },
                         new
                         {
                             Id = 127,
                             CourseId = 1,
-                            Score = 61,
+                            Score = 92,
                             StudentId = 19
                         },
                         new
                         {
                             Id = 128,
                             CourseId = 2,
-                            Score = 80,
+                            Score = 61,
                             StudentId = 19
                         },
                         new
                         {
                             Id = 129,
                             CourseId = 3,
-                            Score = 71,
+                            Score = 98,
                             StudentId = 19
                         },
                         new
                         {
                             Id = 130,
                             CourseId = 4,
-                            Score = 54,
+                            Score = 55,
                             StudentId = 19
                         },
                         new
                         {
                             Id = 131,
                             CourseId = 5,
-                            Score = 100,
+                            Score = 83,
                             StudentId = 19
                         },
                         new
                         {
                             Id = 132,
                             CourseId = 6,
-                            Score = 56,
+                            Score = 100,
                             StudentId = 19
                         },
                         new
                         {
                             Id = 133,
                             CourseId = 7,
-                            Score = 55,
+                            Score = 89,
                             StudentId = 19
                         },
                         new
                         {
                             Id = 134,
                             CourseId = 1,
-                            Score = 66,
+                            Score = 67,
                             StudentId = 20
                         },
                         new
                         {
                             Id = 135,
                             CourseId = 2,
-                            Score = 66,
+                            Score = 92,
                             StudentId = 20
                         },
                         new
                         {
                             Id = 136,
                             CourseId = 3,
-                            Score = 88,
+                            Score = 73,
                             StudentId = 20
                         },
                         new
                         {
                             Id = 137,
                             CourseId = 4,
-                            Score = 92,
+                            Score = 94,
                             StudentId = 20
                         },
                         new
                         {
                             Id = 138,
                             CourseId = 5,
-                            Score = 50,
+                            Score = 85,
                             StudentId = 20
                         },
                         new
                         {
                             Id = 139,
                             CourseId = 6,
-                            Score = 52,
+                            Score = 51,
                             StudentId = 20
                         },
                         new
                         {
                             Id = 140,
                             CourseId = 7,
-                            Score = 92,
+                            Score = 98,
                             StudentId = 20
                         });
                 });
@@ -1324,7 +1326,7 @@ namespace StudentJournal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
 
                     b.HasData(
                         new

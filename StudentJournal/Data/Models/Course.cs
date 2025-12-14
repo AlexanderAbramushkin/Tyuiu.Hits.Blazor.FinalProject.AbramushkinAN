@@ -15,8 +15,6 @@ namespace StudentJournal.Data.Models
 
         [MaxLength(500)]
         public string Description { get; set; } = string.Empty;
-
-        // Убираем virtual для упрощения сериализации
         public ICollection<Grade> Grades { get; set; } = new List<Grade>();
     }
 }

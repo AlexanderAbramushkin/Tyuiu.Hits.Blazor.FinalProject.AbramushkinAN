@@ -1,75 +1,204 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@inject IStudentService StudentService
+@inject ICourseService CourseService
+@inject IGradeService GradeService
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10 col-xl-8">
-            <!-- Заголовок -->
-            <div class="text-center mb-5">
-                <h1 class="display-4 fw-bold text-primary mb-3">
-                    <i class="bi bi-journal-bookmark-fill me-2"></i>Электронный журнал успеваемости
-                </h1>
-                <p class="lead text-muted">
-                    Веб-приложение для управления учебным процессом
-                </p>
-            </div>
+<div class="container-fluid px-4 py-4">
+    <!-- Заголовок с анимацией -->
+    <div class="hero-section text-center mb-5">
+        <div class="hero-icon animate-pulse">
+            <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+        <h1 class="display-4 fw-bold text-primary mb-3">
+            Электронный журнал успеваемости
+        </h1>
+        <p class="lead text-muted mb-4">
+            Современная система управления учебным процессом для студентов и преподавателей
+        </p>
+    </div>
 
-            <!-- Описание системы -->
-            <div class="card shadow-sm border-0 mb-5">
+    <!-- Карточки быстрого доступа -->
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <a href="/students" class="card quick-access-card">
+                <div class="card-body text-center">
+                    <div class="quick-access-icon students">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h5 class="card-title mt-3">Студенты</h5>
+                    <p class="card-text text-muted">Управление списком студентов</p>
+                    <div class="access-badge">
+                        <i class="bi bi-arrow-right-circle me-1"></i>Перейти
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 mb-4">
+            <a href="/courses" class="card quick-access-card">
+                <div class="card-body text-center">
+                    <div class="quick-access-icon courses">
+                        <i class="bi bi-book-fill"></i>
+                    </div>
+                    <h5 class="card-title mt-3">Дисциплины</h5>
+                    <p class="card-text text-muted">Учебные курсы и предметы</p>
+                    <div class="access-badge">
+                        <i class="bi bi-arrow-right-circle me-1"></i>Перейти
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 mb-4">
+            <a href="/grades" class="card quick-access-card">
+                <div class="card-body text-center">
+                    <div class="quick-access-icon grades">
+                        <i class="bi bi-clipboard-data-fill"></i>
+                    </div>
+                    <h5 class="card-title mt-3">Оценки</h5>
+                    <p class="card-text text-muted">Журнал успеваемости</p>
+                    <div class="access-badge">
+                        <i class="bi bi-arrow-right-circle me-1"></i>Перейти
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Описание системы -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <h2 class="fw-bold mb-4 text-primary">
-                        <i class="bi bi-info-circle me-2"></i>О системе
+                    <h2 class="fw-bold mb-4 text-primary d-flex align-items-center">
+                        <i class="bi bi-info-circle-fill me-3"></i>О системе
                     </h2>
                     <div class="system-description">
                         <p class="mb-3">
-                            <strong>Электронный журнал успеваемости</strong> — это современное веб-приложение, разработанное для автоматизации процесса учета успеваемости студентов.
+                            <strong>Электронный журнал успеваемости</strong> — это современное веб-приложение, разработанное для автоматизации процесса учета успеваемости студентов. Система предоставляет полный набор инструментов для управления учебным процессом.
                         </p>
-                        <p class="mb-3">
-                            Система предоставляет следующие возможности:
-                        </p>
-                        <ul class="mb-4">
-                            <li>Ведение базы данных студентов с информацией об институте и группе</li>
-                            <li>Управление учебными курсами и дисциплинами</li>
-                            <li>Внесение и редактирование оценок студентов</li>
-                            <li>Фильтрация оценок по студентам и курсам</li>
-                            <li>Просмотр статистики успеваемости</li>
-                        </ul>
-                        <p class="mb-0">
-                            Приложение разработано с использованием современных технологий и обладает интуитивно понятным интерфейсом.
-                        </p>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6 mb-3">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="bi bi-person-plus-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold">Управление студентами</h6>
+                                        <p class="text-muted small">Добавление, редактирование и удаление записей о студентах</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="bi bi-book-half"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold">Учебные дисциплины</h6>
+                                        <p class="text-muted small">Ведение списка курсов с подробными описаниями</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="bi bi-graph-up-arrow"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold">Контроль успеваемости</h6>
+                                        <p class="text-muted small">Ведение журнала оценок с фильтрацией и статистикой</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="feature-item">
+                                    <div class="feature-icon">
+                                        <i class="bi bi-funnel-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-semibold">Гибкая фильтрация</h6>
+                                        <p class="text-muted small">Фильтрация оценок по студентам, курсам и предметам</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Информация о разработчике -->
+    <!-- Информация о разработчике -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <h2 class="fw-bold mb-4 text-primary">
-                        <i class="bi bi-person-badge me-2"></i>Разработчик
+                    <h2 class="fw-bold mb-4 text-primary d-flex align-items-center">
+                        <i class="bi bi-person-badge-fill me-3"></i>Разработчик
                     </h2>
+
                     <div class="row">
-                        <div class="col-md-3 text-center mb-4 mb-md-0">
-                            <div class="developer-avatar mx-auto mb-3">
-                                <i class="bi bi-person-circle" style="font-size: 4rem; color: #0d6efd;"></i>
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            <!-- Контейнер для фото -->
+                            <div class="photo-optimized-wrapper">
+                                <!-- Основное фото -->
+                                <div class="photo-main-container">
+                                    <img src="images/Ava.jpg"
+                                         alt="Абрамушкин Александр"
+                                         class="photo-optimized" />
+                                </div>
+
+                                <!-- Декоративные элементы -->
+                                <div class="photo-decoration">
+                                    <div class="decoration-ring ring-1"></div>
+                                    <div class="decoration-ring ring-2"></div>
+                                    <div class="decoration-ring ring-3"></div>
+                                </div>
+                            </div>
+
+                            <div class="social-links mt-3">
+                                <a href="https://github.com/AlexanderAbramushkin" target="_blank" class="social-link" title="GitHub">
+                                    <i class="bi bi-github"></i>
+                                </a>
+                                <a href="mailto:abramushkinan@std.tyuiu.ru" class="social-link" title="Email">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </a>
                             </div>
                         </div>
-                        <div class="col-md-9">
-                            <h3 class="fw-bold">Абрамушкин Александр</h3>
+
+                        <div class="col-md-8">
+                            <h4 class="fw-bold">Абрамушкин Александр</h4>
+                            <p class="text-muted mb-3">
+                                <i class="bi bi-mortarboard me-1"></i>Студент 2 курса, группа ИИПБ-24-2
+                            </p>
 
                             <div class="mb-4">
                                 <h5 class="fw-semibold text-primary mb-2">
                                     <i class="bi bi-mortarboard me-2"></i>Образование
                                 </h5>
                                 <div class="education-info">
-                                    <p class="mb-1">
-                                        <strong>Учебное заведение:</strong> Высшая школа цифровых технологий
-                                    </p>
-                                    <p class="mb-1">
-                                        <strong>Группа:</strong> ИИПБ-24-2
-                                    </p>
-                                    <p class="mb-0">
-                                        <strong>Направление:</strong> Искусственный интеллект и программирование
-                                    </p>
+                                    <div class="education-item">
+                                        <div>
+                                            <i class="bi bi-building text-primary"></i>
+                                            <strong>Учебное заведение:</strong>
+                                            <span>Высшая школа цифровых технологий</span>
+                                        </div>
+                                    </div>
+                                    <div class="education-item">
+                                        <div>
+                                            <i class="bi bi-people text-primary"></i>
+                                            <strong>Группа:</strong>
+                                            <span>ИИПБ-24-2</span>
+                                        </div>
+                                    </div>
+                                    <div class="education-item">
+                                        <div>
+                                            <i class="bi bi-code-slash text-primary"></i>
+                                            <strong>Направление:</strong>
+                                            <span>Искусственный интеллект и программирование</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -78,11 +207,26 @@
                                     <i class="bi bi-tools me-2"></i>Технологии проекта
                                 </h5>
                                 <div class="tech-tags">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">Blazor .NET 8</span>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">C#</span>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">Bootstrap 5</span>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">Razor Components</span>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 mb-2 p-2">JavaScript Interop</span>
+                                    <div class="tech-tag">
+                                        <i class="bi bi-microsoft"></i>
+                                        <span>Blazor .NET 8</span>
+                                    </div>
+                                    <div class="tech-tag">
+                                        <i class="bi bi-code-square"></i>
+                                        <span>C#</span>
+                                    </div>
+                                    <div class="tech-tag">
+                                        <i class="bi bi-bootstrap"></i>
+                                        <span>Bootstrap 5</span>
+                                    </div>
+                                    <div class="tech-tag">
+                                        <i class="bi bi-layout-wtf"></i>
+                                        <span>Razor Components</span>
+                                    </div>
+                                    <div class="tech-tag">
+                                        <i class="bi bi-database"></i>
+                                        <span>Entity Framework</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -90,7 +234,7 @@
                                 <h5 class="fw-semibold text-primary mb-2">
                                     <i class="bi bi-calendar-check me-2"></i>О проекте
                                 </h5>
-                                <p class="mb-0">
+                                <p class="mb-2">
                                     Этот сайт является итоговым проектом по дисциплине "Объектно-ориентированное программирование".
                                 </p>
                                 <p class="mb-0">
@@ -102,66 +246,389 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Год разработки -->
-            <div class="text-center mt-4">
-                <p class="text-muted">
-                    <i class="bi bi-copyright me-1"></i>Электронный журнал успеваемости, 2025 год
-                </p>
-            </div>
         </div>
+    </div>
+
+    <!-- Футер -->
+    <div class="text-center mt-5 pt-4 border-top">
+        <p class="text-muted mb-2">
+            <i class="bi bi-copyright me-1"></i>Электронный журнал успеваемости, 2025 год
+        </p>
+        <small class="text-muted">Система управления учебным процессом</small>
     </div>
 </div>
 
 <style>
-    .system-description {
-        line-height: 1.6;
+    /* Герой секция */
+    .hero-section {
+        padding: 2rem 1rem;
+        background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
     }
 
-    .system-description ul {
-        padding-left: 1.5rem;
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0) 100%);
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+
+    .hero-icon {
+        font-size: 4rem;
+        color: #0d6efd;
+        margin-bottom: 1.5rem;
+        display: inline-block;
     }
 
-    .system-description li {
-        margin-bottom: 0.5rem;
-        color: #495057;
+    .animate-pulse {
+        animation: pulse 2s infinite;
     }
 
-    .developer-avatar {
-        width: 120px;
-        height: 120px;
-        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .stat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: white;
+        border-radius: 50px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        font-weight: 500;
+    }
+
+    /* Карточки быстрого доступа */
+    .quick-access-card {
+        text-decoration: none !important;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+        .quick-access-card:hover {
+            transform: translateY(-5px);
+            border-color: #0d6efd;
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.2);
+        }
+
+    .quick-access-icon {
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 3px solid #0d6efd;
+        font-size: 2.5rem;
+        margin: 0 auto;
     }
 
-    .education-info {
-        background-color: #f8f9fa;
+        .quick-access-icon.students {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #0d6efd;
+        }
+
+        .quick-access-icon.courses {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            color: #198754;
+        }
+
+        .quick-access-icon.grades {
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            color: #0dcaf0;
+        }
+
+    /* Особенности системы */
+    .feature-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
         padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #0d6efd;
-    }
-
-    .tech-tags .badge {
-        border-radius: 6px;
-        font-size: 0.9rem;
+        background: #f8f9fa;
+        border-radius: 10px;
         transition: all 0.3s ease;
     }
 
-    .tech-tags .badge:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+        .feature-item:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
 
-    .card {
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #0d6efd, #25a1ff);
         border-radius: 12px;
-        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
     }
 
-    .card:hover {
-        transform: translateY(-5px);
+    /* Статистика */
+    .stat-card {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+        .stat-card:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    /* Оптимизированные стили для фото */
+    .photo-optimized-wrapper {
+        position: relative;
+        width: 220px;
+        height: 220px;
+        margin: 0 auto;
+    }
+
+    .photo-main-container {
+        width: 180px;
+        height: 180px;
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 10;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid white;
+        box-shadow: 0 0 0 4px #0d6efd, 0 8px 30px rgba(13, 110, 253, 0.3);
+        background: white;
+    }
+
+    .photo-optimized {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 25%; /* Регулируйте это значение для настройки положения лица */
+        transition: all 0.4s ease;
+    }
+
+        .photo-optimized:hover {
+            transform: scale(1.08);
+            object-position: center 30%; /* Меняется при наведении */
+        }
+
+    /* Декоративные кольца */
+    .photo-decoration {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .decoration-ring {
+        position: absolute;
+        border-radius: 50%;
+        border: 2px solid;
+        opacity: 0.3;
+        animation: ring-pulse 3s infinite;
+    }
+
+    .ring-1 {
+        top: 10px;
+        left: 10px;
+        width: 200px;
+        height: 200px;
+        border-color: #0d6efd;
+        animation-delay: 0s;
+    }
+
+    .ring-2 {
+        top: 5px;
+        left: 5px;
+        width: 210px;
+        height: 210px;
+        border-color: #25a1ff;
+        animation-delay: 0.5s;
+    }
+
+    .ring-3 {
+        top: 0;
+        left: 0;
+        width: 220px;
+        height: 220px;
+        border-color: #6ea8fe;
+        animation-delay: 1s;
+    }
+
+    @@keyframes ring-pulse {
+        0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.1;
+            transform: scale(1.05);
+        }
+    }
+
+    /* Бейдж качества фото */
+    .photo-quality-badge {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: rgba(25, 135, 84, 0.9);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        z-index: 20;
+    }
+
+    /* Социальные ссылки */
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .social-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: #f8f9fa;
+        border-radius: 50%;
+        color: #495057;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+        .social-link:hover {
+            background: #0d6efd;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+    /* Технологии */
+    .tech-stack {
+        margin-bottom: 2rem;
+    }
+
+    .tech-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        color: #495057;
+        transition: all 0.3s ease;
+    }
+
+        .tech-badge:hover {
+            background: #0d6efd;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    /* Прогресс бар */
+    .progress {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Адаптивность */
+    @@media (max-width: 768px) {
+        .hero-icon {
+            font-size: 3rem;
+        }
+
+        .feature-item {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .feature-icon {
+            margin: 0 auto;
+        }
+
+        .tech-badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .photo-optimized-wrapper {
+            width: 180px;
+            height: 180px;
+        }
+
+        .photo-main-container {
+            width: 140px;
+            height: 140px;
+            top: 20px;
+            left: 20px;
+        }
+
+        .ring-1 {
+            width: 160px;
+            height: 160px;
+        }
+
+        .ring-2 {
+            width: 170px;
+            height: 170px;
+        }
+
+        .ring-3 {
+            width: 180px;
+            height: 180px;
+        }
     }
 </style>

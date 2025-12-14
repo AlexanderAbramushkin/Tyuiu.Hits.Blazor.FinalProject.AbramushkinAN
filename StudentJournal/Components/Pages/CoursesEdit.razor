@@ -12,7 +12,7 @@
                 <p class="page-subtitle">Изменение информации о учебной дисциплине</p>
             </div>
             <button class="btn btn-outline-secondary btn-with-icon"
-                    @onclick="@(() => NavigationManager.NavigateTo("/courses"))">
+                    @onclick="@CancelEdit">
                 <i class="bi bi-arrow-left"></i> Назад
             </button>
         </div>
@@ -20,7 +20,7 @@
 
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            @if (editingCourse == null)
+            @if (originalCourse == null)
             {
                 <div class="loading-state">
                     <div class="spinner"></div>
@@ -31,24 +31,47 @@
             {
                 <div class="form-card">
                     <div class="form-header">
-                        <h5 class="form-title">Редактирование учебной дисциплины "@editingCourse.Name"</h5>
+                        <h5 class="form-title">Редактирование учебной дисциплины "@originalCourse.Name"</h5>
                     </div>
                     <div class="form-body">
+                        @if (errorMessage != null)
+                        {
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-circle me-2"></i> @errorMessage
+                            </div>
+                        }
+
                         <div class="form-group">
                             <label class="form-label">
                                 <span>Название учебной дисциплины</span>
                                 <span class="text-danger">*</span>
                             </label>
-                            <input class="form-input"
-                                   @bind="editingCourse.Name"
+                            <input class="form-input @(string.IsNullOrWhiteSpace(nameValue) ? "is-invalid" : "")"
+                                   @bind="nameValue"
+                                   @bind:event="oninput"
                                    placeholder="Введите название учебной дисциплины"
                                    required />
+                            @if (!string.IsNullOrWhiteSpace(nameValue))
+                            {
+                                <div class="form-info mt-1">
+                                    @if (checkingDuplicate)
+                                    {
+                                        <span class="text-muted">
+                                            <i class="bi bi-hourglass-split me-1"></i> Проверка...
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @duplicateCheckMessage
+                                    }
+                                </div>
+                            }
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Описание</label>
                             <textarea class="form-input textarea"
-                                      @bind="editingCourse.Description"
+                                      @bind="descriptionValue"
                                       rows="4"
                                       placeholder="Опишите содержание учебной дисциплины"></textarea>
                         </div>
@@ -57,13 +80,13 @@
                             <div class="d-flex justify-content-end gap-3">
                                 <button type="button"
                                         class="btn btn-outline-secondary btn-action"
-                                        @onclick="@(() => NavigationManager.NavigateTo("/courses"))">
+                                        @onclick="@CancelEdit">
                                     Отмена
                                 </button>
                                 <button type="button"
                                         class="btn btn-primary btn-action"
                                         @onclick="@SaveCourse"
-                                        disabled="@(string.IsNullOrWhiteSpace(editingCourse.Name))">
+                                        disabled="@(string.IsNullOrWhiteSpace(nameValue) || nameInvalid || checkingDuplicate)">
                                     <i class="bi bi-check-circle me-2"></i> Сохранить изменения
                                 </button>
                             </div>
@@ -76,27 +99,176 @@
 </div>
 
 @code {
-    [Parameter]
-    public int Id { get; set; }
-
-    private Course? editingCourse;
+    [Parameter] public int Id { get; set; }
+    private Course? originalCourse;
+    private string nameValue = "";
+    private string descriptionValue = "";
+    private string? errorMessage;
+    private bool nameInvalid = false;
+    private bool checkingDuplicate = false;
+    private string duplicateCheckMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
-        editingCourse = await CourseService.GetCourseByIdAsync(Id);
+        originalCourse = await CourseService.GetCourseByIdAsync(Id);
+        if (originalCourse != null)
+        {
+            nameValue = originalCourse.Name;
+            descriptionValue = originalCourse.Description ?? "";
+        }
+    }
+
+    private async Task OnNameInput()
+    {
+        // Сбрасываем ошибки при вводе
+        errorMessage = null;
+
+        if (!string.IsNullOrWhiteSpace(nameValue))
+        {
+            await CheckForDuplicate();
+        }
+        else
+        {
+            duplicateCheckMessage = "";
+            nameInvalid = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task CheckForDuplicate()
+    {
+        if (string.IsNullOrWhiteSpace(nameValue) || checkingDuplicate)
+        {
+            return;
+        }
+
+        checkingDuplicate = true;
+
+        try
+        {
+            // Проверяем, не изменилось ли имя
+            if (nameValue?.Trim() == originalCourse?.Name?.Trim())
+            {
+                nameInvalid = false;
+                duplicateCheckMessage = "<span class='text-success'><i class='bi bi-check-circle me-1'></i> Название не изменилось</span>";
+                return;
+            }
+
+            var exists = await CourseService.CourseNameExistsAsync(nameValue, Id);
+
+            if (exists)
+            {
+                nameInvalid = true;
+                duplicateCheckMessage = $"<span class='text-danger'><i class='bi bi-x-circle me-1'></i> Учебная дисциплина с названием '{nameValue}' уже существует!</span>";
+            }
+            else
+            {
+                nameInvalid = false;
+                duplicateCheckMessage = "<span class='text-success'><i class='bi bi-check-circle me-1'></i> Название доступно</span>";
+            }
+        }
+        finally
+        {
+            checkingDuplicate = false;
+            StateHasChanged();
+        }
     }
 
     private async Task SaveCourse()
     {
-        if (editingCourse != null && !string.IsNullOrWhiteSpace(editingCourse.Name))
+        if (string.IsNullOrWhiteSpace(nameValue))
         {
-            await CourseService.UpdateCourseAsync(editingCourse);
+            errorMessage = "Введите название дисциплины";
+            StateHasChanged();
+            return;
+        }
+
+        if (nameInvalid)
+        {
+            errorMessage = "Исправьте ошибки в форме";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            // Финальная проверка перед сохранением
+            var exists = await CourseService.CourseNameExistsAsync(nameValue, Id);
+            if (exists)
+            {
+                errorMessage = "Учебная дисциплина с таким названием уже существует!";
+                StateHasChanged();
+                return;
+            }
+
+            // Создаем новый объект с обновленными данными
+            var updatedCourse = new Course
+                {
+                    Id = Id,
+                    Name = nameValue,
+                    Description = descriptionValue
+                };
+
+            await CourseService.UpdateCourseAsync(updatedCourse);
             NavigationManager.NavigateTo("/courses");
         }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private void CancelEdit()
+    {
+        // Просто возвращаемся назад без сохранения
+        NavigationManager.NavigateTo("/courses");
     }
 }
 
 <style>
+    .alert-danger {
+        background-color: rgba(231, 76, 60, 0.1);
+        border: 1px solid rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .is-invalid {
+        border-color: #e74c3c !important;
+    }
+
+        .is-invalid:focus {
+            box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.1) !important;
+        }
+
+    .form-info {
+        font-size: 0.85rem;
+        min-height: 1.5rem;
+    }
+
+    .text-success {
+        color: #27ae60;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+    }
+
+    .text-muted {
+        color: #6c757d;
+    }
+
     .loading-state {
         text-align: center;
         padding: 4rem 1rem;
@@ -113,15 +285,19 @@
     }
 
     @@keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 
     .loading-state p {
         color: #7f8c8d;
     }
 
-    /* Остальные стили такие же как в CoursesAdd.razor */
     .page-header {
         margin-bottom: 2rem;
     }
@@ -217,9 +393,5 @@
         border-radius: 8px;
         font-weight: 500;
         font-size: 0.95rem;
-    }
-
-    .text-danger {
-        color: #e74c3c;
     }
 </style>

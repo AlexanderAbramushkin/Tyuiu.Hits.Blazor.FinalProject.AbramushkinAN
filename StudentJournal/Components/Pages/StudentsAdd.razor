@@ -18,6 +18,14 @@
         </div>
     </div>
 
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> @errorMessage
+            <button type="button" class="btn-close" @onclick="ClearError"></button>
+        </div>
+    }
+
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="form-card">
@@ -30,10 +38,17 @@
                             <span>ФИО студента</span>
                             <span class="text-danger">*</span>
                         </label>
-                        <input class="form-input"
+                        <input class="form-input @(nameInvalid ? "is-invalid" : "")"
                                @bind="newStudent.Name"
-                               placeholder="Введите полное имя студента"
+                               @oninput="@((e) => OnNameInput(e))"
+                               placeholder="Введите имя и фамилию студента (Например: Наталья Чернова)"
                                required />
+                        @if (nameInvalid)
+                        {
+                            <div class="invalid-feedback">
+                                @nameErrorMessage
+                            </div>
+                        }
                     </div>
 
                     <div class="form-group">
@@ -52,13 +67,69 @@
 
                     <div class="form-group">
                         <label class="form-label">
+                            <span>Курс</span>
+                            <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-input" @bind="newStudent.Course" @bind:event="onchange" required>
+                            <option value="">Выберите курс</option>
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <option value="@i">@i курс</option>
+                            }
+                        </select>
+                        <div class="form-info mt-1">
+                            @if (newStudent.Course > 0)
+                            {
+                                <span class="text-primary">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Год в группе: <strong>@GetYearByCourse(newStudent.Course)</strong>
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
                             <span>Группа</span>
                             <span class="text-danger">*</span>
                         </label>
-                        <input class="form-input"
-                               @bind="newStudent.Group"
-                               placeholder="Введите номер группы"
-                               required />
+                        <div class="input-group-group">
+                            <div class="input-row">
+                                <select class="form-input form-input-small" @bind="groupPrefix" @bind:event="onchange">
+                                    <option value="">Префикс</option>
+                                    @foreach (var prefix in groupPrefixes)
+                                    {
+                                        <option value="@prefix">@prefix</option>
+                                    }
+                                </select>
+                                <span class="input-separator">-</span>
+                                <input class="form-input form-input-small year-input"
+                                       value="@GetYearByCourse(newStudent.Course)"
+                                       readonly />
+                                <span class="input-separator">-</span>
+                                <input class="form-input form-input-small"
+                                       @bind="groupNumber"
+                                       @bind:event="oninput"
+                                       placeholder="№"
+                                       maxlength="1" />
+                            </div>
+                            <div class="form-info">
+                                @if (!string.IsNullOrEmpty(groupPrefix) && !string.IsNullOrEmpty(groupNumber) && newStudent.Course > 0)
+                                {
+                                    <div class="group-preview">
+                                        <i class="bi bi-check-circle text-success me-1"></i>
+                                        <span>Группа:</span>
+                                        <strong class="ms-1">
+                                            @groupPrefix-@GetYearByCourse(newStudent.Course)-@groupNumber
+                                        </strong>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span>Формат: префикс-год-номер (ИИПБ-24-1, ВШЦТ-25-2 и т.д.)</span>
+                                }
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-footer">
@@ -84,6 +155,10 @@
 
 @code {
     private Student newStudent = new();
+    private string errorMessage = string.Empty;
+    private bool nameInvalid = false;
+    private string nameErrorMessage = string.Empty;
+    private bool checkingDuplicate = false;
 
     private List<string> institutes = new List<string>
     {
@@ -97,23 +172,123 @@
         "Институт заочного и дистанционного образования"
     };
 
+    private List<string> groupPrefixes = new List<string>
+    {
+        "ИИПБ", "ВШЦТ", "ТИ", "ИАД", "ИС", "НГИ", "ИЗДО", "ВИШ"
+    };
+
+    private string groupPrefix = "";
+    private string groupNumber = "";
+
+    protected override void OnInitialized()
+    {
+        newStudent.Course = 2;
+    }
+
     private bool IsFormValid =>
         !string.IsNullOrWhiteSpace(newStudent.Name) &&
         !string.IsNullOrWhiteSpace(newStudent.Institute) &&
-        !string.IsNullOrWhiteSpace(newStudent.Group);
+        newStudent.Course >= 1 && newStudent.Course <= 5 &&
+        !string.IsNullOrWhiteSpace(groupPrefix) &&
+        !string.IsNullOrWhiteSpace(groupNumber) &&
+        !nameInvalid &&
+        !checkingDuplicate;
+
+    private async Task OnNameInput(ChangeEventArgs e)
+    {
+        // Сброс ошибки при вводе
+        nameInvalid = false;
+        nameErrorMessage = string.Empty;
+
+        // Проверка дубликата, только если все поля для формирования группы заполнены
+        if (!string.IsNullOrWhiteSpace(groupPrefix) &&
+            !string.IsNullOrWhiteSpace(groupNumber) &&
+            newStudent.Course > 0 &&
+            !string.IsNullOrWhiteSpace(e.Value?.ToString()))
+        {
+            await CheckForDuplicate();
+        }
+    }
+
+    private async Task CheckForDuplicate()
+    {
+        checkingDuplicate = true;
+
+        try
+        {
+            // Формирование группы длля проверки
+            var fullGroup = $"{groupPrefix}-{GetYearByCourse(newStudent.Course)}-{groupNumber}";
+
+            // Проверяем, существует ли студент
+            var exists = await StudentService.StudentExistsAsync(newStudent.Name, fullGroup);
+
+            if (exists)
+            {
+                nameInvalid = true;
+                nameErrorMessage = $"Студент {newStudent.Name} уже существует в группе {fullGroup}";
+            }
+            else
+            {
+                nameInvalid = false;
+                nameErrorMessage = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            nameInvalid = false;
+        }
+        finally
+        {
+            checkingDuplicate = false;
+            StateHasChanged();
+        }
+    }
 
     private async Task SaveStudent()
     {
-        if (IsFormValid)
+        try
         {
-            await StudentService.AddStudentAsync(newStudent);
-            NavigationManager.NavigateTo("/students");
+            errorMessage = string.Empty;
+
+            if (IsFormValid)
+            {
+                // Формирование полного названя группы
+                newStudent.Group = $"{groupPrefix}-{GetYearByCourse(newStudent.Course)}-{groupNumber}";
+
+                // Финальная проверка перед сохранением
+                var exists = await StudentService.StudentExistsAsync(newStudent.Name, newStudent.Group);
+                if (exists)
+                {
+                    errorMessage = $"Студент {newStudent.Name} уже существует в группе {newStudent.Group}";
+                    return;
+                }
+
+                await StudentService.AddStudentAsync(newStudent);
+                NavigationManager.NavigateTo("/students");
+            }
         }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Произошла ошибка при сохранении студента. Попробуйте снова.";
+        }
+    }
+
+    private string GetYearByCourse(int course)
+    {
+        return (25 - (course - 1)).ToString();
+    }
+
+    private void ClearError()
+    {
+        errorMessage = string.Empty;
     }
 }
 
 <style>
-    /* Стили такие же как в CoursesAdd.razor */
     .page-header {
         margin-bottom: 2rem;
     }
@@ -193,7 +368,19 @@
         transition: all 0.2s;
     }
 
-    /* Стрелочки только для select */
+    .form-input-small {
+        width: auto;
+        min-width: 100px;
+        text-align: center;
+        flex: 1;
+    }
+
+    .year-input {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #0d6efd;
+    }
+
     select.form-input {
         appearance: none;
         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -202,9 +389,36 @@
         background-size: 1em;
     }
 
-    /* Для input стрелочек не должно быть */
-    input.form-input {
-        background-image: none;
+    .input-group-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .input-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .input-separator {
+        font-weight: bold;
+        color: #495057;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .form-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+        min-height: 1.5rem;
+    }
+
+    .group-preview {
+        display: flex;
+        align-items: center;
+        color: #198754;
     }
 
     .form-input:focus {
@@ -223,4 +437,53 @@
     .text-danger {
         color: #e74c3c;
     }
+
+    .text-success {
+        color: #27ae60;
+    }
+
+    .text-primary {
+        color: #0d6efd;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .alert {
+        border-radius: 8px;
+        border: 1px solid;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c2c7;
+        color: #842029;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
+

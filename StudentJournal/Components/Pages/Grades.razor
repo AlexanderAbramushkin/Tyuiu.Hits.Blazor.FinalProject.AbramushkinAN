@@ -24,9 +24,9 @@
         <div class="card-body">
             <h5 class="filters-title">Фильтры</h5>
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <label class="form-label">Студент</label>
-                    <select class="form-select" @bind="SelectedStudentId" @bind:event="onchange">
+                    <select class="form-select" value="@SelectedStudentId" @onchange="@OnStudentFilterChanged">
                         <option value="">Все студенты</option>
                         @foreach (var student in studentList)
                         {
@@ -34,10 +34,30 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-3">
+                    <label class="form-label">Группа</label>
+                    <select class="form-select" value="@SelectedGroupFilter" @onchange="@OnGroupFilterChanged">
+                        <option value="">Все группы</option>
+                        @foreach (var group in groupedStudents.Keys.OrderBy(g => g))
+                        {
+                            <option value="@group">@group</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">Курс</label>
-                    <select class="form-select" @bind="SelectedCourseId" @bind:event="onchange">
+                    <select class="form-select" value="@SelectedCourseFilter" @onchange="@OnCourseFilterChanged">
                         <option value="">Все курсы</option>
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <option value="@i">@i курс</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Предмет</label>
+                    <select class="form-select" value="@SelectedCourseId" @onchange="@OnSubjectFilterChanged">
+                        <option value="">Все предметы</option>
                         @foreach (var course in courseList)
                         {
                             <option value="@course.Id">@course.Name</option>
@@ -45,10 +65,10 @@
                     </select>
                 </div>
             </div>
-            @if (SelectedStudentId.HasValue || SelectedCourseId.HasValue)
+            @if (SelectedStudentId.HasValue || !string.IsNullOrEmpty(SelectedGroupFilter) || SelectedCourseId.HasValue || SelectedCourseFilter.HasValue)
             {
                 <div class="mt-3">
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="ClearFilters">
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="@ClearFilters">
                         <i class="bi bi-x-circle"></i> Сбросить фильтры
                     </button>
                 </div>
@@ -84,6 +104,7 @@
                             <th>Студент</th>
                             <th>Группа</th>
                             <th>Курс</th>
+                            <th>Предмет</th>
                             <th class="text-center">Оценка</th>
                             <th class="text-end">Действия</th>
                         </tr>
@@ -97,6 +118,9 @@
                             <tr>
                                 <td>
                                     <div class="student-info">
+                                        <div class="student-avatar">
+                                            <div class="avatar-initial">@(student?.Name?[0] ?? '?')</div>
+                                        </div>
                                         <div class="student-details">
                                             <div class="student-name">
                                                 @if (student != null)
@@ -115,17 +139,30 @@
                                 <td>
                                     @if (student != null)
                                     {
-                                        <span class="group-badge">@student.Group</span>
+                                        <span class="group-badge">
+                                            <i class="bi bi-people-fill me-1"></i> @student.Group
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (student != null)
+                                    {
+                                        <span class="course-indicator">
+                                            <i class="bi bi-mortarboard me-1"></i>
+                                            <span class="course-number">@student.Course</span>
+                                        </span>
                                     }
                                 </td>
                                 <td>
                                     @if (course != null)
                                     {
-                                        <span class="course-badge">@course.Name</span>
+                                        <span class="subject-badge">
+                                            <i class="bi bi-journal-text me-1"></i> @course.Name
+                                        </span>
                                     }
                                     else
                                     {
-                                        <span class="text-danger">[Курс не найден]</span>
+                                        <span class="text-danger">[Предмет не найден]</span>
                                     }
                                 </td>
                                 <td class="text-center">
@@ -135,15 +172,15 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="action-buttons">
-                                        <button class="btn btn-sm btn-outline-primary btn-action"
+                                        <button class="btn btn-sm btn-outline-primary btn-action me-2"
                                                 @onclick="@(() => NavigationManager.NavigateTo($"/grades/edit/{grade.Id}"))"
                                                 title="Редактировать">
-                                            <i class="bi bi-pencil me-1"></i> Редактировать
+                                            <i class="bi bi-pencil"></i> Редактировать
                                         </button>
                                         <button class="btn btn-sm btn-outline-danger btn-action"
-                                                @onclick="@(() => ShowDeleteConfirm(grade.Id, student?.Name ?? "Неизвестный студент", course?.Name ?? "Неизвестный курс"))"
+                                                @onclick="@(() => ShowDeleteConfirm(grade.Id, student?.Name ?? "Неизвестный студент", course?.Name ?? "Неизвестный предмет"))"
                                                 title="Удалить">
-                                            <i class="bi bi-trash me-1"></i> Удалить
+                                            <i class="bi bi-trash"></i> Удалить
                                         </button>
                                     </div>
                                 </td>
@@ -155,6 +192,30 @@
             <div class="table-footer">
                 <div class="table-summary">
                     Показано <strong>@gradeList.Count</strong> записей
+                    @if (!string.IsNullOrEmpty(SelectedGroupFilter))
+                    {
+                        <span class="ms-2">(группа @SelectedGroupFilter)</span>
+                    }
+                    @if (SelectedCourseFilter.HasValue)
+                    {
+                        <span class="ms-2">(курс @SelectedCourseFilter)</span>
+                    }
+                </div>
+                <div class="table-stats">
+                    @{
+                        var average = gradeList.Any() ? gradeList.Average(g => g.Score) : 0;
+                        var max = gradeList.Any() ? gradeList.Max(g => g.Score) : 0;
+                        var min = gradeList.Any() ? gradeList.Min(g => g.Score) : 0;
+                    }
+                    <span class="stat-item">
+                        <i class="bi bi-graph-up"></i> Средняя: <strong>@average.ToString("F1")</strong>
+                    </span>
+                    <span class="stat-item">
+                        <i class="bi bi-arrow-up"></i> Макс: <strong>@max</strong>
+                    </span>
+                    <span class="stat-item">
+                        <i class="bi bi-arrow-down"></i> Мин: <strong>@min</strong>
+                    </span>
                 </div>
             </div>
         </div>
@@ -164,14 +225,16 @@
 <ConfirmDialog @ref="deleteDialog"
                Title="Удаление оценки"
                Icon="bi-trash"
-               Message="@($"Вы уверены, что хотите удалить оценку '{gradeToDeleteScore}' студента {gradeToDeleteStudent} по курсу {gradeToDeleteCourse}?")"
-               OnClose="OnDeleteDialogClosed" />
+               Message="@deleteConfirmMessage"
+               OnClose="@OnDeleteDialogClosed" />
 
 @code {
     private List<Student> studentList = new();
     private List<Course> courseList = new();
     private List<Grade> gradeList = new();
     private int? SelectedStudentId;
+    private string? SelectedGroupFilter;
+    private int? SelectedCourseFilter;
     private int? SelectedCourseId;
     private bool isLoading = true;
     private ConfirmDialog? deleteDialog;
@@ -179,13 +242,16 @@
     private string gradeToDeleteStudent = string.Empty;
     private string gradeToDeleteCourse = string.Empty;
     private int gradeToDeleteScore;
+    private string deleteConfirmMessage = string.Empty;
+    private List<Grade> allGrades = new();
+    private Dictionary<string, List<Student>> groupedStudents = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadData();
+        await LoadBaseData();
     }
 
-    private async Task LoadData()
+    private async Task LoadBaseData()
     {
         try
         {
@@ -194,16 +260,12 @@
 
             studentList = (await StudentService.GetStudentsAsync()).ToList();
             courseList = (await CourseService.GetCoursesAsync()).ToList();
+            allGrades = (await GradeService.GetGradesAsync()).ToList();
+            
+            groupedStudents = studentList.GroupBy(s => s.Group)
+                                       .ToDictionary(g => g.Key, g => g.ToList());
 
-            var grades = await GradeService.GetGradesAsync();
-
-            if (SelectedStudentId.HasValue)
-                grades = grades.Where(g => g.StudentId == SelectedStudentId.Value);
-
-            if (SelectedCourseId.HasValue)
-                grades = grades.Where(g => g.CourseId == SelectedCourseId.Value);
-
-            gradeList = grades.ToList();
+            ApplyFilters();
         }
         catch (Exception ex)
         {
@@ -216,12 +278,44 @@
         }
     }
 
+    private void ApplyFilters()
+    {
+        var filteredGrades = allGrades.AsQueryable();
+
+        if (SelectedStudentId.HasValue && SelectedStudentId.Value > 0)
+            filteredGrades = filteredGrades.Where(g => g.StudentId == SelectedStudentId.Value);
+
+        if (!string.IsNullOrEmpty(SelectedGroupFilter))
+        {
+            var studentIdsByGroup = studentList
+                .Where(s => s.Group == SelectedGroupFilter)
+                .Select(s => s.Id)
+                .ToList();
+            filteredGrades = filteredGrades.Where(g => studentIdsByGroup.Contains(g.StudentId));
+        }
+
+        if (SelectedCourseId.HasValue && SelectedCourseId.Value > 0)
+            filteredGrades = filteredGrades.Where(g => g.CourseId == SelectedCourseId.Value);
+
+        if (SelectedCourseFilter.HasValue && SelectedCourseFilter.Value > 0)
+        {
+            var studentIdsByCourse = studentList
+                .Where(s => s.Course == SelectedCourseFilter.Value)
+                .Select(s => s.Id)
+                .ToList();
+            filteredGrades = filteredGrades.Where(g => studentIdsByCourse.Contains(g.StudentId));
+        }
+
+        gradeList = filteredGrades.ToList();
+        StateHasChanged();
+    }
+
     private async Task DeleteGrade(int id)
     {
         try
         {
             await GradeService.DeleteGradeAsync(id);
-            await LoadData();
+            await LoadBaseData();
         }
         catch (Exception ex)
         {
@@ -229,11 +323,13 @@
         }
     }
 
-    private async Task ClearFilters()
+    private void ClearFilters()
     {
         SelectedStudentId = null;
+        SelectedGroupFilter = null;
         SelectedCourseId = null;
-        await LoadData();
+        SelectedCourseFilter = null;
+        ApplyFilters();
     }
 
     private string GetGradeClass(int score)
@@ -253,6 +349,7 @@
             gradeToDeleteStudent = studentName;
             gradeToDeleteCourse = courseName;
             gradeToDeleteScore = grade.Score;
+            deleteConfirmMessage = $"Вы уверены, что хотите удалить оценку '{gradeToDeleteScore}' студента {gradeToDeleteStudent} по предмету {gradeToDeleteCourse}?";
             deleteDialog?.Show();
         }
     }
@@ -264,29 +361,33 @@
             await DeleteGrade(gradeToDeleteId);
         }
     }
+
+    private void OnStudentFilterChanged(ChangeEventArgs e)
+    {
+        SelectedStudentId = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value.ToString());
+        ApplyFilters();
+    }
+
+    private void OnGroupFilterChanged(ChangeEventArgs e)
+    {
+        SelectedGroupFilter = string.IsNullOrEmpty(e.Value?.ToString()) ? null : e.Value.ToString();
+        ApplyFilters();
+    }
+
+    private void OnCourseFilterChanged(ChangeEventArgs e)
+    {
+        SelectedCourseFilter = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value.ToString());
+        ApplyFilters();
+    }
+
+    private void OnSubjectFilterChanged(ChangeEventArgs e)
+    {
+        SelectedCourseId = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value.ToString());
+        ApplyFilters();
+    }
 }
 
 <style>
-    /* Обновленные стили для кнопок действий */
-    .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-    }
-
-    .btn-action {
-        display: flex;
-        align-items: center;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        min-width: 120px;
-        justify-content: center;
-        white-space: nowrap;
-    }
-
-    /* Остальные стили остаются без изменений */
     .page-header {
         margin-bottom: 2rem;
     }
@@ -324,6 +425,32 @@
         margin-bottom: 1rem;
     }
 
+    .form-select {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.1);
+        outline: 0;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+
     .loading-state {
         text-align: center;
         padding: 4rem 1rem;
@@ -340,13 +467,8 @@
     }
 
     @@keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
     .loading-state p {
@@ -387,42 +509,56 @@
         margin-bottom: 0;
     }
 
-        .data-table thead {
-            background-color: #f8f9fa;
-        }
+    .data-table thead {
+        background-color: #f8f9fa;
+    }
 
-        .data-table th {
-            padding: 1rem 1.25rem;
-            font-weight: 600;
-            color: #2c3e50;
-            border-bottom: 2px solid #e9ecef;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
+    .data-table th {
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        color: #2c3e50;
+        border-bottom: 2px solid #e9ecef;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
 
-        .data-table td {
-            padding: 1rem 1.25rem;
-            vertical-align: middle;
-            border-bottom: 1px solid #e9ecef;
-            color: #495057;
-        }
+    .data-table td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+        color: #495057;
+    }
 
-        .data-table tbody tr {
-            transition: background-color 0.2s;
-        }
+    .data-table tbody tr {
+        transition: background-color 0.2s;
+    }
 
-            .data-table tbody tr:hover {
-                background-color: rgba(52, 152, 219, 0.05);
-            }
+    .data-table tbody tr:hover {
+        background-color: rgba(52, 152, 219, 0.05);
+    }
 
-            .data-table tbody tr:last-child td {
-                border-bottom: none;
-            }
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
 
     .student-info {
         display: flex;
         align-items: center;
+        gap: 1rem;
+    }
+
+    .student-avatar {
+        width: 42px;
+        height: 42px;
+        background: rgba(52, 152, 219, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #3498db;
+        font-weight: 600;
+        font-size: 1.2rem;
     }
 
     .student-details {
@@ -449,17 +585,38 @@
         padding: 0.375rem 0.75rem;
         font-size: 0.875rem;
         font-weight: 500;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
     }
 
-    .course-badge {
+    .course-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #495057;
+        gap: 0.375rem;
+    }
+
+    .course-number {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #212529;
+    }
+
+    .subject-badge {
         background: rgba(52, 152, 219, 0.1);
         color: #3498db;
         border-radius: 20px;
         padding: 0.375rem 0.75rem;
         font-size: 0.875rem;
         font-weight: 500;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
     }
 
     .grade-badge {
@@ -472,6 +629,7 @@
         font-weight: bold;
         font-size: 1rem;
         border: 2px solid;
+        margin: 0 auto;
     }
 
     .grade-excellent {
@@ -498,10 +656,31 @@
         border-color: #e74c3c;
     }
 
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+
+    .btn-action {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        min-width: 120px;
+        justify-content: center;
+    }
+
     .table-footer {
         padding: 1rem 1.25rem;
         border-top: 1px solid #e9ecef;
         background-color: #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .table-summary {
@@ -509,7 +688,25 @@
         font-size: 0.9rem;
     }
 
-        .table-summary strong {
-            color: #2c3e50;
-        }
+    .table-summary strong {
+        color: #2c3e50;
+    }
+
+    .table-stats {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .stat-item strong {
+        color: #2c3e50;
+    }
 </style>

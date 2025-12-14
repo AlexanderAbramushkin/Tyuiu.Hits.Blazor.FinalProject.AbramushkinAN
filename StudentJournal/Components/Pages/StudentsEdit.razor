@@ -18,6 +18,15 @@
         </div>
     </div>
 
+    <!-- Блок с ошибками -->
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> @errorMessage
+            <button type="button" class="btn-close" @onclick="ClearError"></button>
+        </div>
+    }
+
     <div class="row justify-content-center">
         <div class="col-lg-8">
             @if (editingStudent == null)
@@ -31,7 +40,13 @@
             {
                 <div class="form-card">
                     <div class="form-header">
-                        <h5 class="form-title">Редактирование студента #@editingStudent.Id</h5>
+                        <h5 class="form-title">
+                            <span class="me-2">Редактирование студента</span>
+                            <span class="course-indicator">
+                                <i class="bi bi-book me-1"></i>
+                                <span class="course-number">@editingStudent.Course</span> курс
+                            </span>
+                        </h5>
                     </div>
                     <div class="form-body">
                         <div class="form-group">
@@ -39,10 +54,17 @@
                                 <span>ФИО студента</span>
                                 <span class="text-danger">*</span>
                             </label>
-                            <input class="form-input"
-                                   @bind="editingStudent.Name"
-                                   placeholder="Введите полное имя студента"
+                            <input class="form-input @(nameInvalid ? "is-invalid" : "")"
+                                   value="@nameValue"
+                                   @oninput="@(async (e) => await NameChanged(e))"
+                                   placeholder="Введите имя и фамилию студента (Например: Наталья Чернова)"
                                    required />
+                            @if (nameInvalid)
+                            {
+                                <div class="invalid-feedback">
+                                    @nameErrorMessage
+                                </div>
+                            }
                         </div>
 
                         <div class="form-group">
@@ -61,13 +83,85 @@
 
                         <div class="form-group">
                             <label class="form-label">
+                                <span>Курс</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-input" @bind="editingStudent.Course" @bind:event="onchange" required>
+                                <option value="">Выберите курс</option>
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <option value="@i">@i курс</option>
+                                }
+                            </select>
+                            <div class="form-info mt-1">
+                                @if (editingStudent.Course > 0)
+                                {
+                                    <div class="course-year-info">
+                                        <i class="bi bi-calendar-week text-primary me-1"></i>
+                                        <span>Соответствующий год в группе:</span>
+                                        <strong class="ms-1">@GetYearByCourse(editingStudent.Course)</strong>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
                                 <span>Группа</span>
                                 <span class="text-danger">*</span>
                             </label>
-                            <input class="form-input"
-                                   @bind="editingStudent.Group"
-                                   placeholder="Введите номер группы"
-                                   required />
+                            <div class="input-group-group">
+                                <div class="group-input-section">
+                                    <div class="input-row mb-2">
+                                        <span class="input-label">Префикс:</span>
+                                        <input class="form-input form-input-small"
+                                               value="@groupPrefix"
+                                               @oninput="@(async (e) => await GroupPrefixChanged(e))"
+                                               placeholder="ИИПБ" />
+                                        <span class="input-separator">-</span>
+                                        <span class="input-label">Год:</span>
+                                        <input class="form-input form-input-small year-input"
+                                               value="@GetYearByCourse(editingStudent.Course)"
+                                               readonly />
+                                        <span class="input-separator">-</span>
+                                        <span class="input-label">Номер:</span>
+                                        <input class="form-input form-input-small"
+                                               value="@groupNumber"
+                                               @oninput="@(async (e) => await GroupNumberChanged(e))"
+                                               placeholder="1" />
+                                    </div>
+                                    <div class="form-info">
+                                        @if (!string.IsNullOrEmpty(groupPrefix) && !string.IsNullOrEmpty(groupNumber))
+                                        {
+                                            <div class="group-preview mb-2">
+                                                @if (nameInvalid)
+                                                {
+                                                    <i class="bi bi-x-circle text-danger me-1"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-check-circle text-success me-1"></i>
+                                                }
+                                                <span>Полное название группы:</span>
+                                                <strong class="ms-1">
+                                                    @groupPrefix-@GetYearByCourse(editingStudent.Course)-@groupNumber
+                                                </strong>
+                                            </div>
+                                        }
+                                        <div>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    @onclick="UpdateGroupYear">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>
+                                                Обновить год в группе
+                                            </button>
+                                            <small class="text-muted ms-2">
+                                                Нажмите, чтобы обновить год в текущей группе
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-footer">
@@ -80,7 +174,7 @@
                                 <button type="button"
                                         class="btn btn-primary btn-action"
                                         @onclick="@SaveStudent"
-                                        disabled="@(!IsFormValid)">
+                                        disabled="@(!IsFormValid || checkingDuplicate || nameInvalid)">
                                     <i class="bi bi-check-circle me-2"></i> Сохранить изменения
                                 </button>
                             </div>
@@ -97,6 +191,13 @@
     public int Id { get; set; }
 
     private Student? editingStudent;
+    private string nameValue = "";
+    private string groupPrefix = "";
+    private string groupNumber = "";
+    private string errorMessage = string.Empty;
+    private bool nameInvalid = false;
+    private string nameErrorMessage = string.Empty;
+    private bool checkingDuplicate = false;
 
     private List<string> institutes = new List<string>
     {
@@ -110,29 +211,214 @@
         "Институт заочного и дистанционного образования"
     };
 
-    private bool IsFormValid =>
-        editingStudent != null &&
-        !string.IsNullOrWhiteSpace(editingStudent.Name) &&
-        !string.IsNullOrWhiteSpace(editingStudent.Institute) &&
-        !string.IsNullOrWhiteSpace(editingStudent.Group);
-
     protected override async Task OnInitializedAsync()
     {
         editingStudent = await StudentService.GetStudentByIdAsync(Id);
+        if (editingStudent != null)
+        {
+            nameValue = editingStudent.Name;
+            ParseCurrentGroup();
+        }
     }
+
+    private bool IsFormValid =>
+        editingStudent != null &&
+        !string.IsNullOrWhiteSpace(nameValue) &&
+        !string.IsNullOrWhiteSpace(editingStudent.Institute) &&
+        editingStudent.Course >= 1 && editingStudent.Course <= 5 &&
+        !string.IsNullOrWhiteSpace(groupPrefix) &&
+        !string.IsNullOrWhiteSpace(groupNumber);
 
     private async Task SaveStudent()
     {
-        if (editingStudent != null && IsFormValid)
+        try
         {
-            await StudentService.UpdateStudentAsync(editingStudent);
-            NavigationManager.NavigateTo("/students");
+            errorMessage = string.Empty;
+
+            if (editingStudent != null && IsFormValid && !nameInvalid && !checkingDuplicate)
+            {
+                // Обновление имени студента
+                editingStudent.Name = nameValue;
+
+                // Обновление группы с правильным годом
+                editingStudent.Group = $"{groupPrefix}-{GetYearByCourse(editingStudent.Course)}-{groupNumber}";
+
+                // Финальная проверка перед сохранением
+                var fullGroup = editingStudent.Group;
+                var exists = await StudentService.StudentExistsAsync(editingStudent.Name, fullGroup);
+
+                // Проверка что это не тот же самый студент.
+                if (exists)
+                {
+                    var existingStudents = await StudentService.GetStudentsByGroupAsync(fullGroup);
+                    var duplicateStudent = existingStudents.FirstOrDefault(s =>
+                        s.Name.ToLower().Trim() == editingStudent.Name.ToLower().Trim());
+
+                    // Если найденный студент не тот, которого мы редактируем
+                    if (duplicateStudent != null && duplicateStudent.Id != editingStudent.Id)
+                    {
+                        errorMessage = $"Студент {editingStudent.Name} уже существует в группе {fullGroup}";
+                        return;
+                    }
+                }
+
+                await StudentService.UpdateStudentAsync(editingStudent);
+                NavigationManager.NavigateTo("/students");
+            }
         }
+        catch (InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Произошла ошибка при сохранении изменений. Попробуйте снова.";
+        }
+    }
+
+    private void ParseCurrentGroup()
+    {
+        if (!string.IsNullOrEmpty(editingStudent?.Group))
+        {
+            var parts = editingStudent.Group.Split('-');
+            if (parts.Length == 3)
+            {
+                groupPrefix = parts[0];
+                groupNumber = parts[2];
+            }
+        }
+    }
+
+    private string GetYearByCourse(int course)
+    {
+        // Логика: курс 1 = 25, курс 2 = 24, курс 3 = 23, курс 4 = 22, курс 5 = 21
+        return (25 - (course - 1)).ToString();
+    }
+
+    private void UpdateGroupYear()
+    {
+        if (editingStudent != null && !string.IsNullOrEmpty(groupPrefix) && !string.IsNullOrEmpty(groupNumber))
+        {
+            // Принудительный запуск проверки после редактирования года
+            _ = CheckForDuplicate();
+            StateHasChanged();
+        }
+    }
+
+    private async Task NameChanged(ChangeEventArgs e)
+    {
+        nameValue = e.Value?.ToString() ?? "";
+
+        // Сброс ошиюки при вводе
+        nameInvalid = false;
+        nameErrorMessage = string.Empty;
+
+        if (editingStudent != null &&
+            !string.IsNullOrWhiteSpace(groupPrefix) &&
+            !string.IsNullOrWhiteSpace(groupNumber))
+        {
+            await CheckForDuplicate();
+        }
+    }
+
+    private async Task GroupPrefixChanged(ChangeEventArgs e)
+    {
+        groupPrefix = e.Value?.ToString() ?? "";
+        await OnGroupInput();
+    }
+
+    private async Task GroupNumberChanged(ChangeEventArgs e)
+    {
+        groupNumber = e.Value?.ToString() ?? "";
+        await OnGroupInput();
+    }
+
+    private async Task OnGroupInput()
+    {
+        if (editingStudent != null &&
+            !string.IsNullOrWhiteSpace(groupPrefix) &&
+            !string.IsNullOrWhiteSpace(groupNumber) &&
+            !string.IsNullOrWhiteSpace(nameValue))
+        {
+            await CheckForDuplicate();
+        }
+    }
+
+    private async Task CheckForDuplicate()
+    {
+        if (string.IsNullOrWhiteSpace(nameValue) ||
+            string.IsNullOrWhiteSpace(groupPrefix) ||
+            string.IsNullOrWhiteSpace(groupNumber))
+        {
+            return;
+        }
+
+        checkingDuplicate = true;
+
+        try
+        {
+            // Формирование группы для проверки
+            var fullGroup = $"{groupPrefix}-{GetYearByCourse(editingStudent?.Course ?? 2)}-{groupNumber}";
+
+            // Проверка: существует ли студент с таким именем в этой группе
+            var existingStudents = await StudentService.GetStudentsByGroupAsync(fullGroup);
+            var duplicateStudent = existingStudents.FirstOrDefault(s =>
+                s.Name.ToLower().Trim() == nameValue.ToLower().Trim());
+
+            // Если найден студент с таким же именем, и это не тот же самый студент
+            if (duplicateStudent != null && duplicateStudent.Id != editingStudent?.Id)
+            {
+                nameInvalid = true;
+                nameErrorMessage = $"Студент {nameValue} уже существует в группе {fullGroup}";
+            }
+            else
+            {
+                nameInvalid = false;
+                nameErrorMessage = string.Empty;
+            }
+        }
+        finally
+        {
+            checkingDuplicate = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearError()
+    {
+        errorMessage = string.Empty;
     }
 }
 
 <style>
-    /* Стили такие же как в CoursesEdit.razor */
+    .is-invalid {
+        border-color: #dc3545 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+        color: #dc3545;
+    }
+
+    .alert {
+        border-radius: 8px;
+        border: 1px solid;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c2c7;
+        color: #842029;
+    }
+
     .loading-state {
         text-align: center;
         padding: 4rem 1rem;
@@ -149,8 +435,25 @@
     }
 
     @@keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .loading-state p {
@@ -199,6 +502,28 @@
         font-weight: 600;
         color: #2c3e50;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .course-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #495057;
+        gap: 0.375rem;
+    }
+
+    .course-number {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #212529;
     }
 
     .form-body {
@@ -236,7 +561,26 @@
         transition: all 0.2s;
     }
 
-    /* Стрелочки только для select */
+    .form-input-small {
+        width: auto;
+        min-width: 80px;
+        text-align: center;
+        flex: 1;
+    }
+
+    .year-input {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #0d6efd;
+    }
+
+    .input-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-right: 0.5rem;
+        min-width: 60px;
+    }
+
     select.form-input {
         appearance: none;
         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -245,10 +589,60 @@
         background-size: 1em;
     }
 
-    /* Для input стрелочек не должно быть */
-    input.form-input {
-        background-image: none;
+    .input-group-group {
+        display: flex;
+        flex-direction: column;
     }
+
+    .group-input-section {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .input-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .input-separator {
+        font-weight: bold;
+        color: #495057;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .form-info {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+
+    .course-year-info {
+        display: flex;
+        align-items: center;
+        color: #0d6efd;
+    }
+
+    .group-preview {
+        display: flex;
+        align-items: center;
+        background-color: #f8f9fa;
+        padding: 0.5rem;
+        border-radius: 6px;
+        border-left: 3px solid;
+    }
+
+        .group-preview .bi-check-circle + strong {
+            color: #198754;
+            border-left-color: #198754;
+        }
+
+        .group-preview .bi-x-circle + strong {
+            color: #dc3545;
+            border-left-color: #dc3545;
+        }
 
     .form-input:focus {
         border-color: #3498db;

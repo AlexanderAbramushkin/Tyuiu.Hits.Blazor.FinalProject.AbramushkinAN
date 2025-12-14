@@ -127,9 +127,7 @@
 </div>
 
 @code {
-    [Parameter]
-    public int Id { get; set; }
-
+    [Parameter] public int Id { get; set; }
     private Grade? editingGrade;
     private List<Student> studentList = new();
     private List<Course> courseList = new();
@@ -142,6 +140,7 @@
         studentList = (await StudentService.GetStudentsAsync()).ToList();
         courseList = (await CourseService.GetCoursesAsync()).ToList();
     }
+
 
     private bool ValidateForm()
     {
@@ -158,7 +157,7 @@
 
         if (editingGrade.CourseId <= 0)
         {
-            AddError("CourseId", "Выберите курс");
+            AddError("CourseId", "Выберите учебную дисциплину");
         }
 
         if (editingGrade.Score < 0 || editingGrade.Score > 100)
@@ -190,8 +189,7 @@
 
     private async Task SaveGrade()
     {
-        if (editingGrade == null)
-            return;
+        if (editingGrade == null) return;
 
         if (!ValidateForm())
         {
@@ -202,6 +200,18 @@
 
         try
         {
+            var exists = await GradeService.GradeExistsAsyncExcludingId(
+                editingGrade.StudentId,
+                editingGrade.CourseId,
+                editingGrade.Id);
+
+            if (exists)
+            {
+                errorMessage = "Оценка по этому предмету для студента уже существует!";
+                StateHasChanged();
+                return;
+            }
+
             await GradeService.UpdateGradeAsync(editingGrade);
             NavigationManager.NavigateTo("/grades");
         }
